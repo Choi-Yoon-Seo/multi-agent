@@ -991,6 +991,260 @@ Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
 
 ---
 
+## 부록 C. Gemini CLI로 수행하는 동일 실습
+
+- Google의 터미널 기반 AI 코딩 에이전트로, Claude Code와 가장 비슷한 구조를 가진다
+- MCP, Skills, Extensions, Hooks, Memory 계층이 모두 존재하며, 일부는 Claude Code보다 세분화되어 있다
+- 2026년 3월 기준 최신 버전: **v0.34.0**
+
+### C.1 설치
+
+```bash
+# npm으로 설치
+npm install -g @anthropic-ai/gemini-cli   # 실제 패키지명은 공식 문서 확인
+# 또는 공식 설치 스크립트
+curl -fsSL https://geminicli.com/install.sh | bash
+```
+
+- 설치 후 `gemini` 명령으로 실행한다
+- Google 계정 인증이 필요하며, Gemini API 키 또는 Google Cloud 프로젝트를 연결한다
+
+### C.2 Instructions — GEMINI.md
+
+- Claude Code의 `CLAUDE.md`에 대응하는 파일이 `GEMINI.md`이다
+- 계층 구조:
+
+| 위치 | 범위 |
+|------|------|
+| `~/.gemini/GEMINI.md` | 전역 — 모든 프로젝트에 적용 |
+| 프로젝트 루트 `GEMINI.md` | 프로젝트 — 해당 워크스페이스에만 적용 |
+| 하위 디렉토리 `GEMINI.md` | 컴포넌트 — 해당 디렉토리 접근 시 자동 로드 |
+
+- 모든 발견된 파일은 합쳐져서 매 프롬프트에 포함됨
+- `@file.md` 구문으로 다른 파일을 import할 수 있음
+- 설정에서 파일명을 변경할 수 있어 `AGENTS.md`도 읽기 가능:
+
+```json
+{
+  "context": {
+    "fileName": ["AGENTS.md", "GEMINI.md"]
+  }
+}
+```
+
+- 관련 명령:
+  - `/memory show` — 현재 로드된 전체 컨텍스트 확인
+  - `/memory refresh` — 파일 변경 후 다시 로드
+  - `/memory add <텍스트>` — 전역 `GEMINI.md`에 내용 추가
+
+### C.3 Skills 실습
+
+- Claude Code와 **같은 오픈 표준**을 사용한다 — `SKILL.md` 형식이 동일함
+- 스킬 위치:
+
+| 위치 | 범위 |
+|------|------|
+| `.gemini/skills/` 또는 `.agents/skills/` | 워크스페이스 — 버전 관리에 포함 |
+| `~/.gemini/skills/` 또는 `~/.agents/skills/` | 사용자 — 전역 개인용 |
+| Extension 내부 | 확장 — 설치된 Extension에 번들된 스킬 |
+
+- 동작 흐름:
+  1. 세션 시작 시 스킬 이름+설명만 시스템 프롬프트에 주입 (전체 내용 아님)
+  2. 작업이 스킬과 매칭되면 `activate_skill` 호출
+  3. 사용자 동의 후 전체 `SKILL.md`와 폴더 구조가 컨텍스트에 로드
+- 관리 명령: `/skills` (인터랙티브) 또는 `gemini skills` (터미널)
+
+### C.4 MCP 서버 연결
+
+- `.gemini/settings.json` 또는 `~/.gemini/settings.json`에서 설정한다
+- 세 가지 트랜스포트 지원: **stdio**, **SSE**, **HTTP Streaming**
+
+```json
+{
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_TOKEN": "$GITHUB_TOKEN"
+      }
+    },
+    "remoteServer": {
+      "httpUrl": "http://localhost:3000/mcp",
+      "headers": {
+        "Authorization": "Bearer token"
+      }
+    }
+  }
+}
+```
+
+- 주요 옵션:
+  - `trust`: `true`면 도구 호출 확인을 건너뜀
+  - `includeTools` / `excludeTools`: 특정 도구만 허용하거나 차단
+  - `timeout`: 요청 타임아웃 (기본 600,000ms)
+  - `$VAR_NAME` 구문으로 환경 변수 참조 가능
+- Google Cloud 서비스용 공식 MCP 서버 제공: Maps, Cloud Run, Cloud Storage, AlloyDB 등
+
+### C.5 Extensions (확장 시스템)
+
+- Claude Code에는 없는 Gemini CLI만의 강점이다
+- 스킬 + MCP 서버 + 커맨드 + 훅 + 서브에이전트를 **하나의 패키지로 묶어** 설치·공유할 수 있다
+- 설치/관리:
+
+```bash
+# GitHub에서 설치
+gemini extensions install <github-url>
+
+# 로컬 경로에서 설치
+gemini extensions install ./my-extension
+
+# 새 확장 프로젝트 생성
+gemini extensions new path/to/directory mcp-server
+
+# 개발 모드 (심볼릭 링크)
+gemini extensions link
+```
+
+- [공식 카탈로그](https://geminicli.com/extensions/)에서 Google, Figma, Shopify, Stripe 등 파트너 확장을 탐색할 수 있음
+- Extension은 병렬 로드되어 시작 속도에 큰 영향을 주지 않음
+
+### C.6 Hooks
+
+- Claude Code의 5개 이벤트보다 세분화된 **11개 hook 이벤트**를 제공한다
+
+| 이벤트 | 용도 |
+|--------|------|
+| `SessionStart` / `SessionEnd` | 리소스 초기화/정리 |
+| `BeforeAgent` / `AfterAgent` | 컨텍스트 추가, 프롬프트 검증, 출력 검토 |
+| `BeforeModel` / `AfterModel` | 프롬프트 수정, 모델 교체, 응답 필터링 |
+| `BeforeToolSelection` | 사용 가능한 도구 필터링 |
+| `BeforeTool` / `AfterTool` | 인자 검증, 실행 차단, 결과 후처리 |
+| `PreCompress` | 컨텍스트 압축 전 상태 저장 |
+| `Notification` | 외부 로깅 전달 |
+
+- `settings.json`에서 설정하며, regex 매처와 타임아웃을 지원한다
+
+### C.7 Subagents (실험적)
+
+- 메인 세션 안에서 독립 컨텍스트를 가진 서브에이전트를 실행할 수 있다
+- 각 서브에이전트는 별도 시스템 프롬프트, 제한된 도구셋을 가지며 토큰을 절약한다
+- Plan Mode의 리서치 서브에이전트가 대표적인 활용 사례이다
+
+### C.8 Plan Mode
+
+- v0.34.0부터 **기본 활성화**되어 있다
+- 읽기 전용 모드에서 코드베이스를 분석하고 구조화된 계획을 생성한 후 실행으로 넘어간다
+- Claude Code에는 없는 기능이다
+
+### C.9 Gemini CLI 부록의 의도
+
+- Claude Code와 가장 가까운 구조를 가지고 있어 직접 비교 학습이 가능하다
+- 핵심 대응 관계:
+  - `CLAUDE.md` ↔ `GEMINI.md`
+  - `.claude/skills/` ↔ `.gemini/skills/` (동일 표준)
+  - Claude hooks (5개) ↔ Gemini hooks (11개)
+  - Claude MCP 설정 ↔ Gemini MCP 설정 (거의 동일)
+  - 없음 ↔ Extensions 카탈로그 (Gemini만의 강점)
+- 목적은 "같은 개념이 다른 도구에서 어떻게 표현되는지"를 체감하는 것이다
+
+---
+
+## 부록 D. Google Antigravity로 수행하는 동일 실습
+
+- Google의 에이전틱 IDE로, VS Code 포크 기반이다
+- 2025년 11월 발표, 2026년 3월 기준 **퍼블릭 프리뷰(무료)**, 최신 버전: v1.20.3
+- Editor View(코드 편집), Manager View(다중 에이전트 관리), Browser Integration(웹 조작) 세 가지 표면을 가진다
+- 멀티 모델 지원: Gemini 3 Pro/Flash, Claude Sonnet 4.5/Opus 4.6, GPT-OSS-120B
+
+### D.1 설치
+
+- [antigravity.google](https://antigravity.google)에서 플랫폼별 설치 파일을 다운로드한다
+- macOS, Windows, Linux 모두 지원
+- VS Code 또는 Cursor에서 설정, 확장, 키바인딩을 가져올 수 있다
+- 확장은 **OpenVSX 레지스트리**를 사용하므로, VS Code Marketplace 전용 확장(Pylance, Remote-SSH 등)은 수동 `.vsix` 설치가 필요하다
+
+### D.2 Instructions — Rules 시스템
+
+- 3단계 우선순위를 가진 규칙 파일:
+
+| 우선순위 | 파일 | 설명 |
+|---------|------|------|
+| 1 (최고) | `GEMINI.md` | Antigravity 전용 규칙 |
+| 2 | `AGENTS.md` | 크로스 도구 공유 규칙 (v1.20.3에서 추가) |
+| 3 | `.agent/rules/` | 워크스페이스 수준 보조 규칙 |
+
+- 전역 규칙: `~/.gemini/GEMINI.md`
+- 4가지 활성화 모드:
+
+| 모드 | 동작 |
+|------|------|
+| **Always On** | 항상 적용 |
+| **Manual** | `@` 멘션으로 수동 활성화 |
+| **Model Decision** | 모델이 자연어 설명을 보고 자동 판단 |
+| **Glob** | 파일 패턴 매칭 (예: `*.ts`, `src/**/*.py`) |
+
+- 규칙 1개당 **12,000자** 제한
+
+### D.3 Skills 실습
+
+- `.agents/skills/`에 `SKILL.md`를 배치한다
+- 스킬 범위:
+
+| 위치 | 범위 |
+|------|------|
+| `~/.gemini/antigravity/skills/` | 전역 — 모든 프로젝트 |
+| `<workspace>/.agents/skills/` | 워크스페이스 — 해당 프로젝트만 |
+
+- 스킬은 **온디맨드 로드** — Rules와 달리 항상 활성화되지 않고, 에이전트가 관련 작업을 판단할 때만 로드됨
+- Python, Bash, Node.js, Go 스크립트 실행을 지원하여 LLM이 직접 할 수 없는 작업을 수행 가능
+
+### D.4 Workflows
+
+- `/` 명령으로 호출하는 **저장된 프롬프트 템플릿**이다
+- Claude Code의 Skill `/` 호출과 유사한 개념
+- Rules가 수동적 제약이라면, Workflows는 능동적으로 트리거하는 재사용 가능한 작업 흐름이다
+
+### D.5 MCP 서버 연결
+
+- Antigravity는 MCP를 지원하며, 1,000개 이상의 공식/커뮤니티 MCP 서버를 사용할 수 있다
+- 대표적인 공식 MCP 서버:
+  - **Firebase MCP server** — Firebase 프로젝트 직접 접근 (2026.02 퍼블릭 프리뷰)
+  - **MCP Toolbox for Databases** — AlloyDB, BigQuery, Spanner, Cloud SQL, Looker 연결
+- [antigravity.codes](https://antigravity.codes/)에서 커뮤니티 MCP 서버 1,500개 이상 탐색 가능
+
+### D.6 Multi-Agent (Manager View)
+
+- Antigravity만의 고유 기능이다
+- **Manager View**에서 다수의 에이전트를 동시 생성하고, 각각에 서로 다른 작업을 배정한 뒤 병렬 실행할 수 있다
+- 각 에이전트의 진행 상태를 실시간으로 관찰하는 대시보드 역할을 한다
+- Claude Code의 Team 시스템과 유사하지만 GUI 기반이라는 점이 다르다
+
+### D.7 Browser Integration
+
+- Chrome 확장으로 에이전트가 **웹 애플리케이션을 직접 조작**할 수 있다
+- 버튼 클릭, 폼 작성, 페이지 탐색, 스크린샷 캡처 등이 가능하다
+- 프론트엔드 기능 개발 후 검증 단계에 활용할 수 있다
+
+### D.8 주의사항
+
+- 아직 **퍼블릭 프리뷰**이므로 잦은 크래시와 할당량(quota) 문제가 보고되고 있다
+- OpenVSX 레지스트리 제한으로 일부 VS Code 확장이 바로 동작하지 않을 수 있다
+- 무료라는 장점이 있지만 안정성 면에서는 Claude Code, Cursor보다 뒤처진다
+
+### D.9 Antigravity 부록의 의도
+
+- 핵심 대응 관계:
+  - `CLAUDE.md` / `GEMINI.md` ↔ `GEMINI.md` + `AGENTS.md` + `.agent/rules/`
+  - Claude Skills ↔ Antigravity Skills (온디맨드 로드)
+  - Claude hooks ↔ Antigravity Rules (4가지 활성화 모드)
+  - Claude MCP ↔ Antigravity MCP (동일 프로토콜)
+  - Claude Team ↔ Manager View (GUI 다중 에이전트)
+  - 없음 ↔ Browser Integration (Antigravity만의 강점)
+- IDE 기반이므로 GitHub Copilot 경험에서 넘어오기 쉽고, 다중 에이전트와 브라우저 연동이라는 차별점을 체감할 수 있다
+
+---
+
 ## 참고 자료
 
 ### GitHub Copilot
@@ -1033,6 +1287,31 @@ Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
 - Codex AGENTS.md: https://developers.openai.com/codex/guides/agents-md
 - Codex MCP: https://developers.openai.com/codex/mcp/
 - OpenAI Memory FAQ: https://help.openai.com/en/articles/8590148-memory-faq
+
+### Gemini CLI
+
+- Gemini CLI GitHub: https://github.com/google-gemini/gemini-cli
+- Gemini CLI MCP 서버 설정: https://geminicli.com/docs/tools/mcp-server/
+- Gemini CLI GEMINI.md: https://geminicli.com/docs/cli/gemini-md/
+- Gemini CLI Skills: https://geminicli.com/docs/cli/skills/
+- Gemini CLI Extensions: https://geminicli.com/docs/extensions/
+- Gemini CLI Extensions 카탈로그: https://geminicli.com/extensions/
+- Gemini CLI Hooks: https://geminicli.com/docs/hooks/
+- Gemini CLI Subagents: https://geminicli.com/docs/core/subagents/
+- Gemini CLI Plan Mode: https://developers.googleblog.com/plan-mode-now-available-in-gemini-cli/
+- Gemini CLI Sandboxing: https://geminicli.com/docs/cli/sandbox/
+- Gemini CLI + FastMCP: https://developers.googleblog.com/gemini-cli-fastmcp-simplifying-mcp-server-development/
+- Google Cloud MCP 지원: https://cloud.google.com/blog/products/ai-machine-learning/announcing-official-mcp-support-for-google-services
+
+### Google Antigravity
+
+- Antigravity 공식 사이트: https://antigravity.google
+- Antigravity MCP 문서: https://antigravity.google/docs/mcp
+- Antigravity Skills 문서: https://antigravity.google/docs/skills
+- Antigravity Rules & Workflows: https://antigravity.google/docs/rules-workflows
+- Antigravity MCP 커뮤니티: https://antigravity.codes/
+- Antigravity Skills 가이드 (Codelabs): https://codelabs.developers.google.com/getting-started-with-antigravity-skills
+- Antigravity 소개 (Google Developers Blog): https://developers.googleblog.com/build-with-google-antigravity-our-new-agentic-development-platform/
 
 ---
 
