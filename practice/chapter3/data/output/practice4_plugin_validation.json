@@ -1,0 +1,8 @@
+{
+  "plugin_json_valid": true,
+  "name": "week3-practice-tools",
+  "version": "1.0.0",
+  "has_skills_dir": true,
+  "has_skill_md": true,
+  "has_mcp_json": true
+}

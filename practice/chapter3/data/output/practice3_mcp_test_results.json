@@ -1,0 +1,97 @@
+{
+  "executed_at": "2026-03-30T00:07:30.739722+00:00",
+  "requests": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "method": "tools/list"
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "method": "tools/call",
+      "params": {
+        "name": "list_project_files",
+        "arguments": {
+          "relative_path": "practice",
+          "max_items": 5
+        }
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "method": "tools/call",
+      "params": {
+        "name": "list_project_files",
+        "arguments": {
+          "relative_path": "../../",
+          "max_items": 5
+        }
+      }
+    }
+  ],
+  "responses": [
+    {
+      "jsonrpc": "2.0",
+      "id": 1,
+      "result": {
+        "tools": [
+          {
+            "name": "list_project_files",
+            "description": "읽기 전용으로 프로젝트 디렉토리 목록을 반환합니다.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "relative_path": {
+                  "type": "string",
+                  "default": "."
+                },
+                "max_items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100,
+                  "default": 20
+                }
+              },
+              "additionalProperties": false
+            }
+          }
+        ]
+      },
+      "meta": {
+        "generated_at": "2026-03-30T00:07:30.730018+00:00"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 2,
+      "result": {
+        "ok": true,
+        "path": "practice",
+        "items": [
+          "chapter1",
+          "chapter10",
+          "chapter11",
+          "chapter12",
+          "chapter2"
+        ],
+        "count": 5
+      },
+      "meta": {
+        "generated_at": "2026-03-30T00:07:30.730502+00:00"
+      }
+    },
+    {
+      "jsonrpc": "2.0",
+      "id": 3,
+      "result": {
+        "ok": false,
+        "error": "허용된 프로젝트 경로 밖 접근은 금지됩니다."
+      },
+      "meta": {
+        "generated_at": "2026-03-30T00:07:30.730603+00:00"
+      }
+    }
+  ]
+}

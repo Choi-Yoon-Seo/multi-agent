@@ -18,209 +18,717 @@
 
 ---
 
+## 기초 용어 정리
+
+이 장에서 자주 등장하는 핵심 용어들을 먼저 정리합니다.
+
+### API (Application Programming Interface)
+
+- **쉽게 말하면**: 프로그램끼리 대화하는 방법
+- **예시**: 날씨 정보를 제공하는 서버에 "서울 날씨 알려줘"라고 요청하면 JSON 형식으로 데이터를 받는 것
+- **웹 API**: 인터넷을 통해 특정 주소(URL)로 요청을 보내면 데이터를 받을 수 있는 서비스
+  - 예: `https://api.openweathermap.org/data/2.5/weather?q=Seoul`
+
+### 래핑(Wrapping)
+
+- **정의**: 기존의 복잡한 기능을 더 쉽고 안전하게 사용할 수 있도록 감싸는 것
+- **비유**: 
+  - 날카로운 칼을 그대로 쓰면 위험하지만, 안전 손잡이를 씌우면 편하게 쓸 수 있다
+  - 복잡한 외부 API를 그대로 쓰면 에러 처리가 어렵지만, MCP 서버로 감싸면 에이전트가 안전하게 쓸 수 있다
+- **구체적으로**:
+  ```
+  외부 API (복잡, 에러 많음) 
+    ↓ 래핑 (감싸기)
+  MCP 서버 (단순, 안전, 표준화된 인터페이스)
+    ↓
+  AI 에이전트 (편하게 사용)
+  ```
+
+### MCP 서버 vs MCP 도구
+
+- **MCP 서버**: AI 에이전트가 외부 세계와 소통할 수 있게 해주는 프로그램 (전체 시스템)
+- **MCP 도구(tool)**: MCP 서버가 제공하는 개별 기능
+  - 예: 날씨 MCP 서버 → `get_current_weather` 도구, `get_forecast` 도구
+
+### 인증(Authentication)
+
+- **정의**: "너는 누구니?"를 확인하는 과정
+- **왜 필요한가**: 아무나 API를 무제한 사용하면 서버가 과부하될 수 있고, 비용이 발생할 수 있다
+- **방법**:
+  - **API 키**: 고유한 문자열 (예: `abcd1234efgh5678`)
+  - 요청할 때 이 키를 함께 보내면 "나는 등록된 사용자입니다"를 증명
+
+### 비동기 프로그래밍 (async/await)
+
+- **동기 방식**: 일을 순서대로 하나씩 끝내고 다음으로 넘어감
+  ```python
+  result1 = 작업1()  # 끝날 때까지 기다림
+  result2 = 작업2()  # 작업1이 끝나야 시작
+  ```
+- **비동기 방식**: 기다리는 동안 다른 일을 할 수 있음
+  ```python
+  result1 = await 작업1()  # 기다리는 동안 다른 일 가능
+  result2 = await 작업2()
+  ```
+- **언제 필요한가**: 네트워크 요청처럼 응답을 기다리는 시간이 긴 작업에서 효율적
+
+### 환경 변수 (Environment Variable)
+
+- **정의**: 프로그램이 실행되는 컴퓨터에 저장된 설정 값
+- **왜 사용하는가**: 
+  - API 키 같은 민감한 정보를 코드에 직접 쓰면 위험 (Git에 올리면 노출)
+  - 개발/운영 환경에서 다른 값을 쓸 수 있음
+- **사용 예**:
+  ```
+  # .env 파일
+  OPENWEATHERMAP_API_KEY=abc123
+  ```
+  ```python
+  # Python 코드
+  api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+  ```
+
+---
+
 ## 4.1 외부 API 래핑의 목표와 고려사항
 
-- MCP 서버로 외부 API를 래핑하는 것의 본질
-  - 단순히 "호출을 감싸는 것"이 아니다
-  - 에이전트가 안정적으로 사용할 수 있는 "계약(contract, 인터페이스 약속)"을 만드는 것이다
-  - 3장: 도구 명세 = "무엇을 할 것인가"
-  - 이 장: "어떻게 안전하게 할 것인가"를 다룬다
+### 왜 직접 API를 호출하지 않고 래핑하는가?
 
-- 외부 API의 불확실성
-  - 외부 API는 우리가 통제할 수 없는 영역이다
-  - 네트워크는 언제든 끊길 수 있다
-  - 서버는 과부하 상태일 수 있다
-  - 인증 토큰은 만료될 수 있다
-  - ⚠ 이런 불확실성을 MCP 서버 내부에서 처리하지 않으면, 에이전트는 예측할 수 없는 실패를 경험하게 된다
+AI 에이전트가 외부 API를 직접 호출하면 발생하는 문제들:
+
+1. **표준화되지 않은 인터페이스**: 각 API마다 다른 방식으로 요청/응답
+2. **에러 처리의 어려움**: 네트워크 오류, 인증 실패 등을 매번 다르게 처리
+3. **보안 위험**: API 키를 에이전트에 직접 노출
+4. **재사용 어려움**: 같은 API를 여러 에이전트에서 쓸 때 중복 코드 발생
+
+MCP 서버로 래핑하면:
+- ✅ 모든 도구가 같은 형식(MCP 프로토콜)을 따름
+- ✅ 에러를 서버에서 일관되게 처리
+- ✅ API 키를 서버에만 저장, 에이전트는 모름
+- ✅ 한 번 만들면 어디서든 재사용 가능
+
+### 외부 API를 사용할 때 발생하는 불확실성
+
+외부 API는 우리가 통제할 수 없는 영역입니다. 다음과 같은 문제가 언제든 발생할 수 있습니다:
+
+- ❌ 네트워크가 갑자기 끊김
+- ❌ API 서버가 과부하로 응답이 느림
+- ❌ 인증 토큰이 만료됨
+- ❌ 요청이 너무 많아서 제한(rate limit)에 걸림
+- ❌ API 응답 형식이 예상과 다름
+
+⚠️ **중요**: 이런 불확실성을 MCP 서버 내부에서 처리하지 않으면, 에이전트는 예측할 수 없는 실패를 경험하고 제대로 동작하지 않습니다.
 
 **표 4.1** 외부 API 호출 시 문제 유형과 대응 전략
 
-| 문제 유형 | 원인 | 대응 전략 |
-|----------|------|----------|
-| 네트워크 오류 | 연결 실패, DNS 오류 | 재시도(지수 백오프) |
-| 인증 실패 | 잘못된 키, 만료된 키 | 명확한 에러 메시지, 키 검증 |
-| 레이트 리밋 | 요청 과다 | 대기 후 재시도, 캐싱 |
-| 응답 지연 | 서버 과부하 | 타임아웃 설정, 취소 |
-| 잘못된 응답 | API 스키마 변경 | 응답 검증, 폴백 처리 |
+| 문제 유형 | 원인 | 대응 전략 | 설명 |
+|----------|------|----------|------|
+| 네트워크 오류 | 연결 실패, DNS 오류 | 재시도(지수 백오프) | 잠시 후 다시 시도하되, 대기 시간을 점점 늘림 |
+| 인증 실패 | 잘못된 키, 만료된 키 | 명확한 에러 메시지, 키 검증 | 사용자가 키를 확인하고 수정할 수 있도록 안내 |
+| 레이트 리밋 | 요청 과다 | 대기 후 재시도, 캐싱 | 요청 횟수 제한에 걸렸을 때 잠시 기다림 |
+| 응답 지연 | 서버 과부하 | 타임아웃 설정, 취소 | 너무 오래 기다리지 않고 일정 시간 후 포기 |
+| 잘못된 응답 | API 스키마 변경 | 응답 검증, 폴백 처리 | 예상과 다른 형식이면 기본값 사용 |
 
-- 실습 예제: OpenWeatherMap API
-  - 무료 티어를 제공한다
-  - API 키 발급이 간단하다
-  - 요청/응답 구조가 명확하다
-  - 날씨 정보는 실시간 데이터이므로 실제 실행 결과를 확인하기에 적합하다
+### 실습 예제: OpenWeatherMap API
+
+이 장에서는 실제로 동작하는 날씨 정보 MCP 서버를 만들어봅니다.
+
+**OpenWeatherMap API를 선택한 이유**:
+- ✅ 무료 티어를 제공 (하루 1,000회 요청까지 무료)
+- ✅ API 키 발급이 간단 (이메일만 있으면 5분 안에 가능)
+- ✅ 요청/응답 구조가 명확하고 문서화가 잘 되어 있음
+- ✅ 날씨 정보는 실시간 데이터이므로 실행할 때마다 다른 결과를 확인 가능
+
+**API 호출 예시**:
+```bash
+# 서울 날씨 조회
+curl "https://api.openweathermap.org/data/2.5/weather?q=Seoul&appid=YOUR_API_KEY"
+```
+
+**응답 예시** (JSON):
+```json
+{
+  "weather": [{"main": "Clear", "description": "clear sky"}],
+  "main": {"temp": 298.15, "humidity": 60},
+  "name": "Seoul"
+}
+```
+
+이 API를 MCP 서버로 래핑하면:
+- 에이전트는 복잡한 URL이나 API 키를 몰라도 됨
+- `get_current_weather(city="Seoul")` 같은 간단한 함수 호출로 날씨 정보를 얻음
+- 네트워크 오류나 잘못된 도시명 등의 에러를 서버가 처리
 
 ---
 
 ## 4.2 인증키 관리: .env와 환경 변수
 
-- API 키를 코드에 하드코딩할 때 발생하는 보안 문제
-  - 가장 흔한 실수: API 키가 포함된 코드를 Git 저장소에 커밋하는 것
-    - 공개 저장소라면 즉시 노출된다
-    - 비공개 저장소라도 팀원 변경이나 저장소 유출 시 위험해진다
-  - 로그 파일에 요청 URL이 기록될 때
-    - 쿼리 파라미터로 포함된 키가 함께 노출되는 경우도 있다
+### ❌ 잘못된 방법: API 키를 코드에 직접 쓰기
 
-- 표준적인 해결 방법: 환경 변수 사용
-  - Python에서는 `python-dotenv` 패키지를 사용한다
-  - `.env` 파일에서 환경 변수를 로드할 수 있다
+```python
+# 절대 이렇게 하지 마세요!
+api_key = "abcd1234efgh5678ijkl"  # ⚠️ 위험!
+url = f"https://api.openweathermap.org/data/2.5/weather?appid={api_key}"
+```
+
+**왜 위험한가?**
+
+1. **Git 저장소에 올리면 즉시 노출**
+   - 공개 저장소라면 전 세계에 공개됨
+   - 비공개 저장소라도 팀원 모두가 볼 수 있음
+   - 나중에 저장소가 공개되거나 유출되면 키가 노출됨
+
+2. **로그에 기록되면 위험**
+   - 요청 URL 전체를 로그에 남기면 쿼리 파라미터의 키도 함께 기록됨
+   - 로그 파일이 다른 시스템으로 전송되면 노출 범위가 더 넓어짐
+
+3. **키를 변경하기 어려움**
+   - 키가 유출되면 여러 파일을 모두 수정해야 함
+
+### ✅ 올바른 방법: 환경 변수 사용
+
+**단계 1: `.env` 파일 만들기**
+
+프로젝트 루트 디렉토리에 `.env` 파일을 만들고 API 키를 저장합니다:
+
+```bash
+# .env 파일
+OPENWEATHERMAP_API_KEY=abcd1234efgh5678ijkl
+```
+
+**단계 2: `.gitignore`에 추가하기**
+
+`.env` 파일이 Git에 올라가지 않도록 보호합니다:
+
+```bash
+# .gitignore 파일
+.env
+*.env
+!.env.example
+```
+
+**단계 3: `.env.example` 파일 만들기**
+
+팀원들과 어떤 환경 변수가 필요한지 공유합니다 (실제 키는 포함하지 않음):
+
+```bash
+# .env.example 파일 (Git에 올려도 안전)
+OPENWEATHERMAP_API_KEY=your_api_key_here
+```
+
+**단계 4: Python 코드에서 사용하기**
 
 ```python
 from dotenv import load_dotenv
 import os
 
+# .env 파일 로드
 load_dotenv()
+
+# 환경 변수 읽기
 api_key = os.getenv("OPENWEATHERMAP_API_KEY")
+
+# 키가 없으면 에러 메시지 출력
+if not api_key:
+    raise ValueError("API 키가 설정되지 않았습니다. .env 파일을 확인하세요.")
+
+# 이제 안전하게 사용 가능
+url = f"https://api.openweathermap.org/data/2.5/weather?appid={api_key}"
 ```
 
-_전체 코드는 practice/chapter4/code/4-6-weather-mcp-server.py 참고_
+_전체 코드는 [practice/chapter4/code/4-6-weather-mcp-server.py](practice/chapter4/code/4-6-weather-mcp-server.py) 참고_
 
-- `.env` 파일 관리 규칙
-  - ⚠ `.env` 파일은 반드시 `.gitignore`에 추가해야 한다
-  - 대신 `.env.example` 파일을 만들어 필요한 환경 변수 목록을 공유하는 것이 좋은 관례이다
+### 환경 변수 우선순위
 
+`python-dotenv`는 다음 순서로 환경 변수를 찾습니다:
+
+1. **시스템 환경 변수** (터미널에서 `export`로 설정한 것)
+2. `.env` 파일의 변수
+
+**예시**:
+```bash
+# 터미널에서
+export OPENWEATHERMAP_API_KEY=system_key
+
+# Python에서 load_dotenv() 실행 후
+# os.getenv("OPENWEATHERMAP_API_KEY") → "system_key"
+# (.env 파일의 값은 무시됨)
 ```
-# .env.example
-OPENWEATHERMAP_API_KEY=your_api_key_here
-```
 
-- 환경 변수 우선순위
-  - 시스템에 이미 설정된 환경 변수가 있으면 `.env` 파일의 값보다 우선한다
-  - 이 동작은 `python-dotenv`의 기본 설정이다
-  - 프로덕션 환경에서 `.env` 파일 없이 시스템 환경 변수만으로 동작하게 할 때 유용하다
+**왜 이렇게 설계되었나?**
+- 개발 환경: `.env` 파일 사용
+- 운영 환경: 시스템 환경 변수로 설정 (서버 관리자만 접근 가능)
+- 운영 환경에는 `.env` 파일을 배포하지 않아도 됨
+
+### 실습 체크리스트
+
+- [ ] `.env` 파일 생성 및 API 키 저장
+- [ ] `.gitignore`에 `.env` 추가 확인
+- [ ] `.env.example` 파일 생성
+- [ ] `python-dotenv` 패키지 설치 (`pip install python-dotenv`)
+- [ ] 코드에서 `load_dotenv()` 호출 및 환경 변수 읽기 테스트
 
 ---
 
 ## 4.3 실패 처리: 타임아웃, 재시도, 에러 응답
 
-- 실패 처리가 필요한 이유
-  - 외부 API는 언제든 실패할 수 있다
-  - "성공 경로"뿐 아니라 "실패 경로"도 설계해야 한다
+### 왜 실패 처리가 중요한가?
 
-- 실패 처리의 핵심 세 가지
-  - 첫째: 무한 대기를 방지하는 타임아웃 설정
-  - 둘째: 일시적 오류에 대응하는 재시도 전략
-  - 셋째: 클라이언트가 이해할 수 있는 에러 응답 형식
+외부 API는 언제든 실패할 수 있습니다. 성공하는 경우만 생각하고 코드를 짜면, 실패했을 때 프로그램이 멈추거나 예상치 못한 동작을 하게 됩니다.
 
-### 타임아웃 설정
+**꼭 처리해야 할 세 가지**:
+1. ⏱️ **타임아웃**: 너무 오래 기다리지 않기
+2. 🔄 **재시도**: 일시적 오류는 다시 시도하기
+3. 📝 **에러 응답**: 실패 원인을 명확히 전달하기
 
-- 네트워크 요청에는 반드시 타임아웃을 설정해야 한다
-- ⚠ 타임아웃 없이 요청을 보내면
-  - 서버가 응답하지 않을 때 무한히 대기하게 된다
-- `httpx` 라이브러리에서는 `timeout` 파라미터로 초 단위 타임아웃을 지정한다
-- 일반적으로 외부 API 호출에는 10~30초 사이의 타임아웃이 적절하다
+---
 
-### 재시도 전략
+### 1️⃣ 타임아웃 설정: 무한 대기 방지
 
-- 모든 오류가 재시도 대상은 아니다
-  - 재시도하면 안 되는 오류 (결과가 달라지지 않으므로 즉시 실패 반환)
-    - 인증 실패(401): 키가 틀렸거나 만료된 경우
-    - 잘못된 요청(400): 요청 자체가 잘못된 경우
-  - 재시도하면 성공 가능성이 있는 오류
-    - 서버 오류(5xx): 서버 측 일시적 장애
-    - 네트워크 오류: 연결 일시 끊김
-
-- 지수 백오프(exponential backoff, 재시도 대기 시간을 지수적으로 늘리는 방식) 적용
-  - 첫 번째 재시도: 1초 후
-  - 두 번째 재시도: 2초 후
-  - 세 번째 재시도: 4초 후
-  - 이유: 서버가 과부하 상태일 때 부하를 가중시키지 않으면서도 복구 후 빠르게 요청을 처리할 수 있다
+**문제 상황**: API 서버가 응답하지 않으면?
 
 ```python
+# ❌ 타임아웃 없음 → 무한 대기 가능
+response = requests.get(url)  # 서버가 응답 안 하면 영원히 기다림
+```
+
+**해결 방법**: 타임아웃 설정
+
+```python
+# ✅ 10초 후에는 포기
+response = requests.get(url, timeout=10)
+```
+
+**타임아웃 시간 선택 가이드**:
+- 빠른 API (데이터베이스 조회): 1~5초
+- 일반 웹 API: 10~30초
+- 무거운 계산/파일 다운로드: 60초 이상
+
+**실제 사용 예시**:
+```python
+import httpx
+
+async def fetch_weather(city: str):
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            response = await client.get(f"https://api.openweathermap.org/...")
+            return response.json()
+    except httpx.TimeoutException:
+        return {"error": "요청 시간 초과 (10초). 네트워크를 확인하세요."}
+```
+
+---
+
+### 2️⃣ 재시도 전략: 언제 다시 시도할까?
+
+**재시도하면 안 되는 경우** (즉시 실패 반환):
+
+| HTTP 상태 코드 | 의미 | 재시도 여부 | 이유 |
+|--------------|------|-----------|------|
+| 400 | 잘못된 요청 | ❌ | 요청 자체가 잘못됨. 다시 보내도 같은 오류 |
+| 401 | 인증 실패 | ❌ | API 키가 틀림. 키를 수정해야 함 |
+| 404 | 찾을 수 없음 | ❌ | 잘못된 URL이나 도시명 |
+
+**재시도해야 하는 경우**:
+
+| HTTP 상태 코드 | 의미 | 재시도 여부 | 이유 |
+|--------------|------|-----------|------|
+| 500 | 서버 오류 | ✅ | 일시적 장애일 수 있음 |
+| 502, 503 | 서버 과부하 | ✅ | 잠시 후 복구될 수 있음 |
+| 네트워크 오류 | 연결 끊김 | ✅ | 일시적 네트워크 문제 |
+
+---
+
+### 3️⃣ 지수 백오프: 점점 느리게 재시도하기
+
+**지수 백오프(Exponential Backoff)란?**
+
+재시도할 때 대기 시간을 지수적으로 늘리는 전략입니다.
+
+**왜 필요한가?**
+- 서버가 과부하 상태라면 즉시 재시도하면 상황을 악화시킴
+- 조금씩 기다리면서 재시도해야 서버가 복구될 시간을 줌
+
+**작동 방식**:
+```
+첫 번째 시도: 즉시 실패 → 1초 대기
+두 번째 시도: 실패 → 2초 대기 (2^1)
+세 번째 시도: 실패 → 4초 대기 (2^2)
+네 번째 시도: 실패 → 8초 대기 (2^3)
+최종 포기
+```
+
+**구현 예시**:
+```python
+import time
+
+max_retries = 3
+
 for attempt in range(max_retries):
-    response = requests.get(url, timeout=10)
-    if response.ok:
-        break
-    time.sleep(2 ** attempt)  # 지수 백오프: 1, 2, 4초
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            return response.json()  # 성공!
+        
+        # 4xx 오류는 재시도 안 함
+        if 400 <= response.status_code < 500:
+            return {"error": f"요청 오류: {response.status_code}"}
+        
+        # 5xx 오류는 재시도
+        if attempt < max_retries - 1:
+            wait_time = 2 ** attempt  # 1, 2, 4초
+            print(f"재시도 {attempt + 1}/{max_retries}, {wait_time}초 대기...")
+            time.sleep(wait_time)
+    
+    except requests.Timeout:
+        if attempt < max_retries - 1:
+            wait_time = 2 ** attempt
+            print(f"타임아웃. {wait_time}초 후 재시도...")
+            time.sleep(wait_time)
+
+return {"error": "최대 재시도 횟수 초과"}
 ```
 
-_전체 코드는 practice/chapter4/code/4-6-weather-mcp-server.py 참고_
+_전체 코드는 [practice/chapter4/code/4-6-weather-mcp-server.py](practice/chapter4/code/4-6-weather-mcp-server.py) 참고_
 
-### MCP 에러 응답 형식
+---
 
-- MCP 도구가 실패할 때 에러 반환 방식
-  - ⚠ 단순히 예외를 발생시키는 것보다 구조화된 JSON 응답을 반환하는 것이 더 좋다
-  - 이유: 에이전트가 실패를 처리하기 쉽다
+### 4️⃣ 명확한 에러 응답 형식
 
-→ 예시:
-```json
-{
-  "success": false,
-  "error": "API 요청 실패: 인증키가 유효하지 않습니다"
-}
+**❌ 나쁜 예**: 예외만 발생시키기
+```python
+def get_weather(city):
+    if not api_key:
+        raise Exception("키 없음")  # 에이전트가 처리하기 어려움
 ```
+
+**✅ 좋은 예**: 구조화된 JSON 응답
+```python
+def get_weather(city):
+    if not api_key:
+        return {
+            "success": False,
+            "error": "API 키가 설정되지 않았습니다. .env 파일을 확인하세요.",
+            "error_code": "MISSING_API_KEY"
+        }
+```
+
+**왜 더 좋은가?**
+- 에이전트가 `success` 필드로 성공/실패를 쉽게 판단
+- `error` 메시지로 사용자에게 무엇을 해야 하는지 안내 가능
+- `error_code`로 프로그래밍적으로 에러 처리 가능
+
+**다양한 에러 케이스**:
+```python
+# 인증 실패
+{"success": False, "error": "API 키가 유효하지 않습니다", "error_code": "INVALID_API_KEY"}
+
+# 잘못된 도시명
+{"success": False, "error": "도시를 찾을 수 없습니다: Seoulll", "error_code": "CITY_NOT_FOUND"}
+
+# 네트워크 오류
+{"success": False, "error": "네트워크 연결 실패. 인터넷을 확인하세요", "error_code": "NETWORK_ERROR"}
+
+# 타임아웃
+{"success": False, "error": "요청 시간 초과 (10초)", "error_code": "TIMEOUT"}
+```
+
+---
 
 ---
 
 ## 4.4 로깅: 요청과 응답을 추적 가능하게
 
-- 로깅이 필수인 이유
-  - 운영 환경에서 문제가 발생했을 때 원인을 파악하려면 로깅이 필수다
-  - ⚠ 언제, 어떤 요청을 보냈고, 응답이 무엇이었는지 기록하지 않으면 문제 재현조차 어려워진다
+### 로깅이란?
 
-- Python `logging` 모듈 활용
-  - 로그 레벨별로 메시지를 분류할 수 있다
-  - 파일이나 콘솔에 출력할 수 있다
-  - 로그 레벨 (심각도 순서):
-    - DEBUG: 상세 디버깅 정보
-    - INFO: 일반 정보
-    - WARNING: 경고
-    - ERROR: 오류
+프로그램이 실행되는 동안 일어나는 일들을 기록하는 것입니다.
 
+**비유**: 프로그램의 "일기"를 쓰는 것
+- 언제 무슨 일이 일어났는지 기록
+- 문제가 생겼을 때 과거로 돌아가서 원인 파악 가능
+
+### 왜 로깅이 필수인가?
+
+**시나리오**: 운영 중인 MCP 서버에서 갑자기 오류 발생
+
+❌ **로깅 없으면?**
+- 사용자: "서울 날씨 안 나와요"
+- 개발자: "음... 언제요? 어떤 오류였나요?"
+- 사용자: "아까요. 그냥 안 됐어요"
+- 개발자: "😓 원인을 모르겠네요..."
+
+✅ **로깅 있으면?**
+- 사용자: "서울 날씨 안 나와요"
+- 개발자: 로그 확인 → "아, 2026-03-30 14:23에 API 키 만료 오류네요. 바로 수정하겠습니다"
+
+### Python logging 모듈 기본 사용법
+
+**로그 레벨 (심각도 순서)**:
+
+| 레벨 | 용도 | 예시 |
+|------|------|------|
+| **DEBUG** | 상세한 디버깅 정보 | "요청 파라미터: city=Seoul, units=metric" |
+| **INFO** | 일반 정보 | "API 호출 성공: 서울 날씨 조회" |
+| **WARNING** | 경고 (프로그램은 계속 실행) | "API 응답이 느립니다 (3초 소요)" |
+| **ERROR** | 오류 발생 | "API 호출 실패: 인증 오류" |
+| **CRITICAL** | 치명적 오류 | "서버 시작 실패: 포트 이미 사용 중" |
+
+**기본 설정**:
 ```python
 import logging
 
+# 로그 설정
 logging.basicConfig(
-    filename="logs/mcp_server.log",
-    level=logging.INFO,
+    filename="logs/mcp_server.log",  # 로그 파일 경로
+    level=logging.INFO,  # INFO 이상만 기록 (DEBUG는 제외)
     format="%(asctime)s - %(levelname)s - %(message)s"
+    # 출력 형식: 2026-03-30 14:23:45 - INFO - API 호출 성공
 )
+
+# 로그 기록
+logging.info("MCP 서버 시작")
+logging.warning("API 키가 곧 만료됩니다")
+logging.error("날씨 조회 실패: 네트워크 오류")
 ```
 
-_전체 코드는 practice/chapter4/code/4-6-weather-mcp-server.py 참고_
+**로그 파일 예시** (`logs/mcp_server.log`):
+```
+2026-03-30 14:23:45 - INFO - MCP 서버 시작
+2026-03-30 14:24:12 - INFO - API 호출 성공: city=Seoul
+2026-03-30 14:25:33 - ERROR - API 호출 실패: 타임아웃
+2026-03-30 14:25:35 - INFO - 재시도 1/3
+2026-03-30 14:25:37 - INFO - API 호출 성공: city=Seoul
+```
 
-- ⚠ 로깅 시 주의할 점: 민감 정보 마스킹
-  - 로그에 그대로 기록하면 안 되는 정보: API 키, 사용자 개인정보, 인증 토큰
-  - 실습 코드에서는 API 키를 마스킹하는 함수를 구현했다
-  - → 예시: `abcd1234efgh5678` → `abcd...5678` 형태로 변환하여 기록
+_전체 코드는 [practice/chapter4/code/4-6-weather-mcp-server.py](practice/chapter4/code/4-6-weather-mcp-server.py) 참고_
 
-- ⚠ STDIO 기반 MCP 서버에서 특히 주의할 점
-  - `print()` 함수를 사용하면 안 된다
-  - 이유: MCP 프로토콜은 표준 출력(stdout)을 통해 통신하므로
-    - `print()`로 출력한 내용이 프로토콜 메시지와 섞여 통신이 깨질 수 있다
-  - 대안: `logging` 모듈을 사용하면 표준 에러(stderr)로 출력되어 안전하다
+---
 
-### 실패 사례: 로그에 API 키가 노출된 경우
+### ⚠️ 주의사항 1: 민감 정보 마스킹
 
-- 사건 경위
-  - 한 개발팀에서 날씨 MCP 서버를 운영하다가 보안 문제가 발생했다
-  - 디버깅을 위해 요청 URL 전체를 로그에 기록했다
-  - 쿼리 파라미터에 포함된 API 키가 그대로 노출되었다
-  - 로그 파일이 모니터링 시스템으로 전송되면서 더 넓은 범위로 유출되었다
+**절대 로그에 기록하면 안 되는 것**:
+- API 키
+- 비밀번호
+- 사용자 개인정보 (주민번호, 신용카드 번호 등)
+- 인증 토큰
 
-- 대응책 두 가지
-  - 첫째: 로그 기록 전에 민감 정보를 마스킹한다
-  - 둘째: 요청 URL 대신 엔드포인트와 파라미터를 분리하여 기록하고, API 키는 기록에서 제외한다
-  - 실습 코드의 `_mask_api_key()` 함수가 이 패턴을 보여준다
+**❌ 나쁜 예**:
+```python
+logging.info(f"API 호출: https://api.weather.com?key=abcd1234efgh5678")
+# 로그 파일에 API 키가 그대로 노출!
+```
+
+**✅ 좋은 예**:
+```python
+def mask_api_key(url: str) -> str:
+    """API 키를 마스킹"""
+    # abcd1234efgh5678 → abcd...5678
+    import re
+    def mask(match):
+        key = match.group(1)
+        return f"key={key[:4]}...{key[-4:]}"
+    return re.sub(r'key=([a-zA-Z0-9]+)', mask, url)
+
+masked_url = mask_api_key(url)
+logging.info(f"API 호출: {masked_url}")
+# 로그: https://api.weather.com?key=abcd...5678  ✅ 안전
+```
+
+**실제 사건**: 한 개발팀의 교훈
+
+- **문제**: 디버깅용으로 요청 URL 전체를 로그에 기록
+- **결과**: 쿼리 파라미터의 API 키가 로그 파일에 노출
+- **확산**: 로그가 모니터링 시스템으로 자동 전송되면서 더 많은 사람에게 노출
+- **교훈**: 
+  - 민감 정보는 반드시 마스킹
+  - URL 대신 엔드포인트와 파라미터를 분리해서 기록
+  - API 키는 아예 로그에서 제외
+
+---
+
+### ⚠️ 주의사항 2: MCP 서버에서 print() 사용 금지!
+
+**MCP 서버에서 절대 하면 안 되는 것**:
+```python
+print("날씨 조회 중...")  # ❌ MCP 통신을 깨뜨림!
+```
+
+**왜 안 되나?**
+
+MCP 프로토콜은 **표준 출력(stdout)**을 사용해서 통신합니다:
+```
+클라이언트 ←─ JSON 메시지 (stdout) ─→ MCP 서버
+```
+
+`print()`를 쓰면:
+```
+클라이언트 ←─ "날씨 조회 중..." + JSON 메시지 ─→ MCP 서버
+                ↑ 이 부분 때문에 JSON 파싱 실패!
+```
+
+**✅ 올바른 방법**: `logging` 모듈 사용
+
+`logging`은 **표준 에러(stderr)**로 출력되므로 안전합니다:
+```python
+import logging
+
+logging.info("날씨 조회 중...")  # ✅ stderr로 출력, 통신 안전
+```
+
+**요약**:
+- ❌ `print()`: stdout (MCP 통신 방해)
+- ✅ `logging`: stderr (안전)
+
+---
+
+### 로깅 모범 사례
+
+**1. 의미 있는 정보만 기록하기**
+```python
+# ❌ 너무 애매
+logging.info("성공")
+
+# ✅ 구체적
+logging.info("날씨 조회 성공: city=Seoul, temp=15.3°C")
+```
+
+**2. 에러 발생 시 컨텍스트 포함**
+```python
+# ❌ 정보 부족
+logging.error("실패")
+
+# ✅ 디버깅 가능
+logging.error(f"API 호출 실패: city={city}, status_code={status}, error={error}")
+```
+
+**3. 로그 레벨 적절히 사용**
+```python
+logging.debug(f"요청 파라미터: {params}")  # 개발 중에만 필요
+logging.info("API 호출 성공")  # 정상 동작 기록
+logging.warning("응답 시간 3초 초과")  # 주의 필요
+logging.error("타임아웃 발생")  # 오류 발생
+```
+
+**4. 개발 vs 운영 환경**
+```python
+import os
+
+# 개발 환경: 상세 로그 (DEBUG)
+# 운영 환경: 필수 로그만 (INFO)
+log_level = logging.DEBUG if os.getenv("ENV") == "dev" else logging.INFO
+
+logging.basicConfig(level=log_level)
+```
+
+---
 
 ---
 
 ## 4.5 테스트 가능한 구조: 의존성 분리
 
-- 외부 API 의존 코드의 테스트 어려움
-  - API 서버가 항상 동작한다고 보장할 수 없다
-  - 테스트할 때마다 실제 요청을 보내면 비용이 발생할 수 있다
-  - 테스트할 때마다 실제 요청을 보내면 레이트 리밋에 걸릴 수 있다
+### 외부 API에 의존하는 코드의 테스트 문제
 
-- 해결 방법: 의존성 분리 + 모킹(mocking, 가짜 객체로 실제 의존성을 대체하는 테스트 기법) 가능한 구조
-  - 핵심: 의존성 주입(dependency injection, 필요한 객체를 외부에서 제공받는 설계 패턴)
-    - API 클라이언트를 함수 내부에서 직접 생성하는 대신 외부에서 주입받도록 설계한다
-    - 결과: 테스트 시에는 실제 클라이언트 대신 가짜(mock) 클라이언트를 주입할 수 있다
+**시나리오**: 날씨 API를 호출하는 함수를 테스트하려고 합니다.
 
-- 실습 코드의 구조
-  - `WeatherAPIClient` 클래스로 API 호출 로직을 캡슐화했다
-  - 이 클래스의 메서드들은 실제 API 호출 없이도 단위 테스트가 가능하다
+```python
+def get_weather(city: str):
+    # 실제 API 호출
+    response = requests.get(f"https://api.openweathermap.org/...")
+    return response.json()
+```
 
-**표 4.2** 단위 테스트 결과
+**테스트 시 문제점**:
+1. ❌ API 서버가 다운되면 테스트 실패
+2. ❌ 테스트할 때마다 실제 비용 발생 가능
+3. ❌ 너무 많은 테스트로 rate limit 초과
+4. ❌ 테스트가 느림 (네트워크 대기 시간)
+5. ❌ 인터넷 없으면 테스트 불가능
+
+### 해결책: 모킹(Mocking)
+
+**모킹이란?**
+- 실제 외부 시스템을 **가짜로 대체**하는 테스트 기법
+- 비유: 실제 은행 시스템 대신 "모형 은행"으로 테스트하는 것
+
+**예시**:
+```python
+# 실제 코드
+def get_weather(city: str):
+    response = requests.get(f"https://api.openweathermap.org/...")
+    return response.json()
+
+# 테스트 코드
+def test_get_weather():
+    # 가짜 응답 만들기
+    fake_response = {
+        "weather": [{"main": "Clear"}],
+        "main": {"temp": 298.15}
+    }
+    
+    # requests.get을 가짜로 대체
+    with mock.patch('requests.get') as mock_get:
+        mock_get.return_value.json.return_value = fake_response
+        
+        # 이제 실제 API 호출 없이 테스트 가능!
+        result = get_weather("Seoul")
+        assert result["weather"][0]["main"] == "Clear"
+```
+
+### 의존성 주입: 테스트 가능한 설계
+
+**❌ 나쁜 설계**: 의존성이 내부에 숨겨짐
+```python
+def get_weather(city: str):
+    # API 클라이언트를 내부에서 생성 → 테스트하기 어려움
+    client = WeatherAPIClient()
+    return client.fetch(city)
+```
+
+**✅ 좋은 설계**: 의존성을 외부에서 주입
+```python
+def get_weather(city: str, client=None):
+    # 기본값은 실제 클라이언트
+    if client is None:
+        client = WeatherAPIClient()
+    
+    # client를 외부에서 제공받을 수 있음
+    return client.fetch(city)
+
+# 실제 사용
+result = get_weather("Seoul")  # 실제 API 호출
+
+# 테스트 사용
+fake_client = FakeWeatherAPIClient()
+result = get_weather("Seoul", client=fake_client)  # 가짜 사용
+```
+
+### 실습 코드의 구조
+
+실습 코드는 `WeatherAPIClient` 클래스로 API 로직을 분리했습니다:
+
+```python
+class WeatherAPIClient:
+    def __init__(self, api_key: str):
+        self.api_key = api_key
+    
+    def fetch_weather(self, city: str) -> dict:
+        # 실제 API 호출
+        url = f"https://api.openweathermap.org/...&appid={self.api_key}"
+        response = httpx.get(url)
+        return response.json()
+
+# 테스트용 가짜 클라이언트
+class FakeWeatherAPIClient:
+    def fetch_weather(self, city: str) -> dict:
+        # API 호출 없이 가짜 데이터 반환
+        return {
+            "weather": [{"main": "Clear", "description": "clear sky"}],
+            "main": {"temp": 298.15, "humidity": 60},
+            "name": city
+        }
+```
+
+**테스트 결과**:
 
 | 테스트 항목 | 테스트 수 | 통과 | 실패 |
 |------------|---------|------|------|
@@ -229,37 +737,67 @@ _전체 코드는 practice/chapter4/code/4-6-weather-mcp-server.py 참고_
 | 입력 검증 | 4 | 4 | 0 |
 | **합계** | **10** | **10** | **0** |
 
-- 테스트 결과는 `practice/chapter4/data/output/ch04_test_results.json`에 저장되어 있다
+_테스트 결과는 `practice/chapter4/data/output/ch04_test_results.json`에 저장_
+
+### 의존성 주입의 장점
+
+1. **테스트 가능**: 가짜 객체로 대체 가능
+2. **유연성**: 다른 구현체로 쉽게 교체
+3. **격리**: 각 부분을 독립적으로 테스트
+4. **빠른 테스트**: 네트워크 호출 없이 즉시 실행
 
 ---
 
 ## 4.6 OAuth 2.1 인증: 원격 MCP 서버의 인증 프레임워크
 
-- 배경
-  - 4.2절: 로컬 환경에서 `.env`로 API 키를 관리하는 방법을 다루었다
-  - 원격 MCP 서버를 운영하려면 클라이언트 인증이 필요하다
-  - MCP 스펙은 2025년 3월부터 OAuth 2.1을 표준 인증 프레임워크로 채택했다
-  - 이후 두 차례의 개정을 거쳐 보안 모델이 크게 강화되었다
+### 배경
 
-### OAuth 2.1 도입과 진화
+4.2절에서는 **로컬 환경**에서 `.env` 파일로 API 키를 관리하는 방법을 배웠습니다.
 
-- 2025년 3월 스펙 (첫 도입)
-  - MCP 서버가 리소스 서버와 인가 서버(authorization server, 토큰 발급을 담당하는 서버)의 역할을 동시에 수행했다
-  - ⚠ 이 구조는 간단하지만 엔터프라이즈 환경에서 문제가 있었다
-    - 이유: 조직은 이미 Okta, Azure AD 같은 중앙 인가 서버를 운영하고 있다
-    - 각 MCP 서버마다 별도의 인가 기능을 구현하는 것은 비효율적이다
+하지만 **원격 MCP 서버**를 운영하려면:
+- 여러 클라이언트(사용자)가 접속
+- 각 클라이언트를 인증해야 함
+- API 키 방식은 한계가 있음 (키 공유, 권한 관리 어려움)
 
-- 2025년 6월 스펙 (개선)
-  - 리소스 서버(MCP 서버)와 인가 서버를 명확히 분리했다
-  - RFC 9728(Protected Resource Metadata)을 필수로 적용했다
-    - MCP 서버는 토큰을 검증만 한다
-    - 토큰 발급은 외부 인가 서버가 담당한다
-  - RFC 8707(Resource Indicators)을 도입했다
-    - 클라이언트가 토큰 요청 시 대상 MCP 서버를 명시하도록 했다
-    - 결과: 악의적인 서버가 다른 서버용 토큰을 탈취하는 공격을 방지한다
+**해결책**: OAuth 2.1 표준 인증 프레임워크 사용
 
-- 2025년 11월 스펙 (추가 강화)
-  - PKCE(Proof Key for Code Exchange, 코드 탈취 공격을 방지하는 보안 확장)가 필수가 되었다
+### OAuth 2.1이란? (간단 버전)
+
+**비유**: 호텔 키 카드
+
+1. **프론트 데스크**(인가 서버): 신분증 확인 후 키 카드 발급
+2. **키 카드**(액세스 토큰): 객실 출입 권한
+3. **객실 도어**(MCP 서버): 키 카드 확인 후 입실 허용
+
+**흐름**:
+```
+사용자 → 인가 서버 (로그인) → 토큰 받음
+        ↓
+사용자 → MCP 서버 (토큰 제시) → 서비스 이용
+```
+
+### MCP에서 OAuth 2.1 도입 연혁 (참고)
+
+**2025년 3월**: 첫 도입
+- MCP 서버가 인증도 직접 처리
+- 간단하지만 대규모 조직에서 비효율적
+
+**2025년 6월**: 개선
+- 인증 서버와 MCP 서버 분리
+- 조직의 기존 인증 시스템(Okta, Azure AD) 활용 가능
+
+**2025년 11월**: 보안 강화
+- PKCE 필수 적용 (코드 탈취 공격 방지)
+
+### 실무에서 언제 사용하나?
+
+| 환경 | 인증 방식 |
+|------|----------|
+| 로컬 개발 | `.env` 파일 (4.2절) |
+| 팀 내부 서버 | API 키 + 간단한 인증 |
+| 공개 서비스 | **OAuth 2.1** (필수) |
+
+**이번 장에서는 기초만 다룹니다**. OAuth 2.1의 자세한 구현은 고급 과정에서 다룹니다.
   - CIMD(Client ID Metadata Document, 클라이언트 등록을 간소화하는 문서 형식)가 도입되었다
 
 ### 인증 흐름 요약
@@ -460,22 +998,66 @@ python3 code/4-6-test-client.py
 
 ---
 
+---
+
 ## 핵심 정리
 
-- 외부 API를 MCP 서버로 래핑할 때는 인증, 실패 처리, 로깅, 테스트 가능한 구조를 함께 고려해야 한다
-- API 키는 `.env` 파일로 분리하고, `.gitignore`에 추가하여 저장소에 커밋되지 않도록 한다
-- 타임아웃과 재시도(지수 백오프)로 일시적 오류에 대응하고, 재시도 불가능한 오류는 즉시 반환한다
-- 로깅은 문제 추적에 필수이지만, 민감 정보는 마스킹해야 한다
-- 원격 MCP 서버는 OAuth 2.1(PKCE 필수)로 인증하며, 리소스 서버와 인가 서버를 분리한다
-- MCP(에이전트↔도구)와 A2A(에이전트↔에이전트)는 상호보완적 프로토콜이다. 상황에 맞는 프로토콜을 선택한다
+이 장에서 배운 내용을 정리합니다:
+
+### 1. 래핑이란?
+외부 API를 MCP 서버로 감싸서 AI 에이전트가 안전하고 편하게 사용할 수 있게 만드는 것
+
+### 2. API 키 관리 (4.2절)
+- ❌ 코드에 직접 쓰기 → Git에 올리면 노출
+- ✅ `.env` 파일에 저장 → `.gitignore`에 추가
+- `.env.example`로 필요한 변수 목록 공유
+
+### 3. 실패 처리 (4.3절)
+- **타임아웃**: 10초 같은 제한 시간 설정 (무한 대기 방지)
+- **재시도**: 네트워크 오류 등 일시적 문제는 지수 백오프로 재시도
+- **에러 응답**: 구조화된 JSON으로 명확한 메시지 전달
+
+### 4. 로깅 (4.4절)
+- `logging` 모듈 사용 (콘솔이나 파일에 기록)
+- ⚠️ 민감 정보(API 키)는 마스킹
+- ⚠️ MCP 서버에서 `print()` 사용 금지 (통신 방해)
+
+### 5. 테스트 가능한 구조 (4.5절)
+- **모킹**: 실제 API 호출 없이 가짜 데이터로 테스트
+- **의존성 주입**: 함수에 객체를 외부에서 전달받도록 설계
+
+### 6. OAuth 2.1 (4.6절)
+- 원격 MCP 서버의 표준 인증 방식
+- 로컬 개발은 `.env`로 충분, 공개 서비스는 OAuth 필요
+
+### 이 장이 중요한 이유
+단순히 "API를 호출하는 코드"를 만드는 게 아니라, **production에서 실제로 동작하는 안정적인 시스템**을 만드는 방법을 배웠습니다.
+
+---
+
+## 실습 체크리스트
+
+이 장을 완료했는지 확인하세요:
+
+- [ ] 기초 용어 (API, 래핑, 환경 변수 등) 이해
+- [ ] `.env` 파일 생성 및 API 키 관리
+- [ ] `.gitignore`에 `.env` 추가 확인
+- [ ] 타임아웃과 재시도 로직 구현
+- [ ] `logging` 모듈로 로그 기록
+- [ ] API 키 마스킹 함수 작성
+- [ ] 테스트 코드 작성 (모킹 사용)
+- [ ] practice/chapter4/code/4-6-weather-mcp-server.py 실행 및 이해
+
+---
 
 ## 다음 장 예고
 
-- 다음 장에서는 이 장에서 만든 MCP 서버를 LangChain 에이전트와 연결한다
-- 다룰 내용:
-  - 에이전트가 MCP 도구를 선택하고 호출하는 과정
-  - 구조화된 출력(Structured Outputs)으로 도구 호출의 신뢰성을 높이는 방법
-  - OpenAI Agents SDK와의 비교
+다음 장에서는 이 장에서 만든 MCP 서버를 **LangChain 에이전트와 연결**합니다.
+
+**배울 내용**:
+- 에이전트가 여러 MCP 도구 중 하나를 선택하고 호출하는 과정
+- 구조화된 출력(Structured Outputs)으로 도구 호출의 신뢰성을 높이는 방법
+- OpenAI Agents SDK와의 비교
 
 ---
 

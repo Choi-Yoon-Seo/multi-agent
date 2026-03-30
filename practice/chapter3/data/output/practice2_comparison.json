@@ -1,0 +1,24 @@
+{
+  "executed_at": "2026-03-30T00:07:30.702743+00:00",
+  "source": "/Users/callii/Documents/agenticAI/practice/chapter3/docs/notes.md",
+  "results": [
+    {
+      "mode": "no_rules",
+      "output_file": "/Users/callii/Documents/agenticAI/practice/chapter3/data/output/summary_no_rules.md",
+      "has_verification": false,
+      "has_uncertainty_marker": false,
+      "verification_items": []
+    },
+    {
+      "mode": "with_rules",
+      "output_file": "/Users/callii/Documents/agenticAI/practice/chapter3/data/output/summary_with_rules.md",
+      "has_verification": true,
+      "has_uncertainty_marker": true,
+      "verification_items": [
+        "핵심 개념 포함 확인",
+        "출력 경로 확인",
+        "불확실 표기 확인"
+      ]
+    }
+  ]
+}
