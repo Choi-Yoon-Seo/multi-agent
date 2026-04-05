@@ -1,8 +1,39 @@
 {
-  "executed_at": "2026-03-30T00:20:37.736688+00:00",
+  "executed_at": "2026-03-30T00:37:08.997936+00:00",
   "server": "@playwright/mcp",
-  "status": "failed",
-  "steps": [],
-  "error": "RuntimeError: MCP stream closed while reading header",
-  "transcript_size": 0
+  "target_url": "https://product.kyobobook.co.kr/detail/S000219302880",
+  "status": "success",
+  "steps": [
+    {
+      "step": "initialize",
+      "ok": true
+    },
+    {
+      "step": "tools/list",
+      "ok": true,
+      "tool_count": 22
+    },
+    {
+      "step": "tools/call:browser_navigate",
+      "ok": true
+    },
+    {
+      "step": "tools/call:browser_wait_for",
+      "ok": true
+    },
+    {
+      "step": "tools/call:browser_evaluate",
+      "ok": true,
+      "toc_line_count": 0
+    },
+    {
+      "step": "tools/call:browser_take_screenshot",
+      "ok": true,
+      "path": "/Users/callii/Documents/agenticAI/practice/chapter3/data/output/kyobo-book.png"
+    }
+  ],
+  "toc_file": "/Users/callii/Documents/agenticAI/practice/chapter3/data/output/practice1_kyobo_toc.md",
+  "screenshot_file": "/Users/callii/Documents/agenticAI/practice/chapter3/data/output/kyobo-book.png",
+  "toc_line_count": 0,
+  "transcript_size": 13
 }
