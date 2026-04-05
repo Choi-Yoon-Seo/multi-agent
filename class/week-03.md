@@ -1,13 +1,13 @@
-# Week 3. MCP, Skills, Plugins 실전 입문
+# Week 3. MCP와 Skills 실전 입문
 
 > 원본: docs/ch3.md
 
 ## 학습 목표
 
 - MCP가 무엇을 해결하는지 실제 사례로 설명할 수 있다
-- GitHub Copilot에서 기존 MCP 서버를 연결하고 실제로 호출할 수 있다
-- GitHub Copilot용 skill 또는 instruction 파일을 작성하고 적용 효과를 비교할 수 있다
-- plugin/app/connector, instructions, hooks, memory 계열이 MCP 및 Skills와 어떻게 다른지 구분할 수 있다
+- 외부 MCP 서버(Playwright MCP)를 설치하고 브라우저 자동화를 실제로 수행할 수 있다
+- 외부 skill을 탐색·설치하고 작업 품질 향상 효과를 비교할 수 있다
+- GitHub Copilot에서 skill 또는 instruction 파일을 작성하고 적용 효과를 비교할 수 있다
 - 최소 MCP 서버를 직접 구현하고 테스트할 수 있다
 
 ---
@@ -47,14 +47,12 @@
 - 같은 기능이라도 제품마다 붙이는 방식이 다를 수 있음
   - 어떤 제품은 MCP 서버를 직접 붙임
   - 어떤 제품은 skill 파일이나 instruction 파일을 함께 사용함
-  - 어떤 제품은 hooks나 settings로 기본 동작을 고정함
-  - 어떤 제품은 memory나 spaces로 지속 문맥을 유지함
-  - 어떤 제품은 plugin, app, connector 같은 이름으로 기능을 포장함
+  - 어떤 제품은 settings로 기본 동작을 고정함
 - 따라서 실무 역량은 "한 제품의 메뉴를 외우는 것"이 아니라, 각 층위의 역할을 구분하는 데서 시작함
 
 ---
 
-## 3.2 MCP, Skills, Plugins, Instructions, Hooks, Memory의 역할 구분
+## 3.2 MCP와 Skills의 역할 구분
 
 ### 3.2.1 MCP
 
@@ -64,7 +62,7 @@
 - 대표 사례:
   - 파일 읽기
   - GitHub 이슈 조회
-  - 데이터베이스 질의
+  - 브라우저 자동화
   - 외부 API 호출
 
 ### 3.2.2 Skills / Instructions
@@ -77,44 +75,11 @@
   - 위험한 명령은 사용자 승인 없이 실행하지 않음
   - 테스트를 먼저 실행하고 실패 시 원인을 기록
 
-### 3.2.3 Plugins / Apps / Connectors
-
-- plugin, app, connector는 제품 안에서 기능을 배포하거나 연결하는 표면인 경우가 많음
-- 질문으로 바꾸면:
-  - "이 기능을 제품 안에서 어떤 형태로 붙이고 배포할 것인가?"
-- 이름은 다르지만 대체로 다음 둘 중 하나를 감쌈
-  - 도구 연결
-  - 사용자용 기능 패키징
-
-### 3.2.4 셋을 혼동하면 생기는 문제
+### 3.2.3 둘을 혼동하면 생기는 문제
 
 - MCP를 배웠다고 해서 Skills까지 배운 것은 아님
 - skill 파일을 만들었다고 해서 외부 도구 연결이 생기는 것도 아님
-- plugin을 설치했다고 해서 표준화된 도구 인터페이스를 이해한 것도 아님
-
-### 3.2.5 Instructions / Rules / Settings
-
-- 이 계층은 skill보다 더 넓은 기본 행동 규칙을 담는 경우가 많음
-- 예:
-  - 항상 한국어로 응답
-  - 파괴적 명령은 승인 전 금지
-  - 결과를 항상 특정 폴더에 저장
-
-### 3.2.6 Hooks
-
-- hook은 특정 이벤트가 발생했을 때 자동으로 동작하는 연결점
-- 예:
-  - 명령 실행 직전 확인
-  - 파일 수정 뒤 포맷 검사
-  - 완료 후 테스트 실행
-
-### 3.2.7 Memory / Spaces / Project Memory
-
-- memory 계층은 프로젝트 문맥을 지속적으로 유지함
-- 예:
-  - 이 저장소의 출력 위치는 항상 `output/`
-  - 기본 테스트 도구는 pytest
-  - 위험한 명령은 승인 전 금지
+- 좋은 에이전트 환경은 **도구 연결(MCP)**과 **작업 규칙(Skills)**을 함께 갖출 때 완성됨
 
 **표 3.1** 주요 개념의 차이
 
@@ -122,9 +87,6 @@
 |------|----------|------|
 | MCP | 무엇을 호출할 수 있는가 | 도구 연결 |
 | Skills / Instructions | 어떻게 일하게 할 것인가 | 작업 규칙 |
-| Plugins / Apps / Connectors | 제품에 어떻게 붙일 것인가 | 확장/패키징 |
-| Hooks | 언제 자동 검사/실행할 것인가 | 이벤트 연결 |
-| Memory / Spaces | 무엇을 계속 기억하게 할 것인가 | 지속 문맥 |
 
 ---
 
@@ -169,8 +131,7 @@
 ### 3.3.5 MCP 서버의 토큰 소비 문제와 대응
 
 - MCP 서버를 연결하면 실제 호출 여부와 무관하게 **모든 툴 스키마가 세션 시작 시 컨텍스트에 로드**됨
-- 시스템 프롬프트, 툴, MCP 서버, 에이전트, 메모리, 대화 내용 전부가 하나의 컨텍스트 윈도우(보통 200k 토큰) 안에서 경쟁함
-- 이것은 실제 운용에서 심각한 문제로 알려져 있음
+- 시스템 프롬프트, 툴, MCP 서버, 에이전트, 대화 내용 전부가 하나의 컨텍스트 윈도우(보통 200k 토큰) 안에서 경쟁함
 
 #### 실제 소비 규모
 
@@ -183,7 +144,7 @@
 
 #### 대응 1: Tool Search (자동)
 
-- MCP 툴 설명이 컨텍스트 윈도우의 10%를 초과하면 Claude Code가 자동으로 **Tool Search**를 활성화함
+- MCP 툴 설명이 컨텍스트 윈도우의 10%를 초과하면 일부 에이전트가 자동으로 **Tool Search**를 활성화함
 - 이 경우 MCP 툴이 즉시 로드되지 않고 **지연(defer)**되며, 실제 필요한 툴만 온디맨드로 검색해서 로드함
 - 전통적 방식 대비 토큰 사용량을 약 85% 줄이며, 도구 선택 정확도도 개선됨
 
@@ -195,7 +156,7 @@
 
 > **⚠️ 좀비 프로세스 주의**
 >
-> MCP 서버를 설정에서 제거(`claude mcp remove`)하거나 `/mcp`로 비활성화해도 **이미 실행 중인 프로세스는 자동으로 종료되지 않는다.**
+> MCP 서버를 설정에서 제거하거나 비활성화해도 **이미 실행 중인 프로세스는 자동으로 종료되지 않는다.**
 > 특히 stdio 기반 MCP 서버(npx로 실행)는 백그라운드에서 계속 살아 있을 수 있으며, 연결이 끊긴 상태에서 **CPU를 100% 점유하며 폭주**하는 경우도 발생한다.
 >
 > ```bash
@@ -226,38 +187,43 @@
 
 ---
 
-## 3.4 실습 1: 기존 MCP 서버 연결해서 써 보기
+## 3.4 실습 1: Playwright MCP 설치하고 브라우저 자동화하기
 
 ### 실습 목표
 
-- GitHub Copilot에서 기존 MCP 서버를 실제로 연결하고 호출한다
+- 외부 MCP 서버(Playwright MCP)를 설치하고, 에이전트가 실제 브라우저를 제어하는 과정을 체험한다
 
-### 수행 단계
+### Playwright MCP란
 
-1. 사용할 MCP 서버 하나를 고른다
-   - 예: GitHub MCP server, 파일 시스템 계열, 간단한 유틸리티 서버
-2. GitHub Copilot 환경에 서버를 등록한다
-3. 도구를 2회 이상 호출한다
-4. 입력과 출력을 기록한다
-5. 실패 사례가 있으면 원인을 메모한다
+- Microsoft가 만든 공식 MCP 서버로, Playwright 브라우저 자동화를 에이전트에게 연결한다
+- 브라우저의 **접근성 트리(accessibility tree)**를 읽어 구조화된 페이지 정보를 반환함
+- 비전 모델 없이도 웹 페이지를 이해하고 조작할 수 있음
+- 25개 이상의 브라우저 자동화 도구를 제공함
 
-### GitHub Copilot 최신 실습 방법 (2026년 3월 기준)
+### 주요 도구 목록
 
-- VS Code(1.99 이상)에서 MCP 서버를 쓰는 공식 흐름은 다음 세 가지임
-  - **Extensions 뷰에서 `@mcp` 검색** → MCP 서버 레지스트리 갤러리에서 설치
-  - **`.vscode/mcp.json`** (워크스페이스 스코프) 또는 사용자 수준 `mcp.json`에 직접 구성 추가
-  - **Command Palette → `MCP: Add Server`** 로 서버 추가
-- 수업에서는 입문 난도를 낮추기 위해 **`@mcp` 검색 또는 기본 제공 GitHub MCP server**부터 시작하는 것을 권장함
+| 도구 | 설명 |
+|------|------|
+| `browser_navigate` | URL로 이동 |
+| `browser_snapshot` | 접근성 트리(페이지 구조) 반환 |
+| `browser_take_screenshot` | 스크린샷 캡처 |
+| `browser_click` | 요소 클릭 |
+| `browser_type` | 텍스트 입력 |
+| `browser_fill_form` | 폼 여러 필드 동시 입력 |
+| `browser_select_option` | 드롭다운 선택 |
+| `browser_press_key` | 키보드 입력 전송 |
+| `browser_evaluate` | JavaScript 실행 |
+| `browser_wait_for` | 텍스트 출현 대기 |
+| `browser_console_messages` | 콘솔 로그 조회 |
+| `browser_network_requests` | 네트워크 요청 목록 |
 
-#### `.vscode/mcp.json` 구성 예시
+### 설치 방법 A: GitHub Copilot (VS Code)
+
+`.vscode/mcp.json`에 추가한다:
 
 ```json
 {
   "servers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/"
-    },
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp@latest"]
@@ -266,43 +232,229 @@
 }
 ```
 
-- 이 파일은 저장소에 커밋하면 팀 전체가 공유할 수 있음
+또는 VS Code Command Palette에서 `MCP: Add Server`를 선택한다.
 
-### GitHub Copilot 실습 예시
+### 설치 방법 B: 프로젝트 공유용 (.mcp.json)
 
-1. VS Code에서 Extensions 뷰를 열고 검색창에 `@mcp`를 입력한다
-2. 필요한 MCP 서버를 찾아 설치하거나, `.vscode/mcp.json`에 직접 추가한다
-3. `github` 서버를 설치하거나 이미 구성된 서버를 확인한다
-4. Copilot Chat에서 **Agent mode**를 연다
-5. 다음과 같이 요청한다
+프로젝트 루트에 `.mcp.json`을 만들어 팀 전체가 공유할 수 있다:
 
-```text
-현재 저장소의 최근 열린 이슈를 확인하고, week3 실습에 도움이 될 만한 항목을 요약해줘.
-가능하면 MCP 도구를 사용해줘.
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    }
+  }
+}
 ```
 
-6. MCP 도구가 실제로 호출되었는지 확인한다
+### 주요 옵션
+
+| 옵션 | 설명 |
+|------|------|
+| `--headless` | 브라우저 창 없이 실행 (CI/서버 환경) |
+| `--browser firefox` | 브라우저 종류 선택 (chrome, firefox, webkit) |
+| `--caps vision` | 좌표 기반 클릭 등 비전 모드 활성화 |
+| `--caps pdf` | 페이지를 PDF로 저장 |
+| `--caps testing` | 요소 존재 검증, 텍스트 확인 등 테스트 도구 |
+| `--viewport-size 1920x1080` | 뷰포트 크기 설정 |
+| `--device "iPhone 15"` | 모바일 기기 에뮬레이션 |
+
+### 수행 단계
+
+1. 위 방법 중 하나로 Playwright MCP를 설치한다
+2. 에이전트에게 다음과 같이 요청한다
+
+```text
+https://news.ycombinator.com 을 열고 상위 5개 헤드라인을 요약해줘.
+```
+
+3. 에이전트가 `browser_navigate` → `browser_snapshot`을 호출하는 과정을 관찰한다
+4. 다음 요청도 시도한다
+
+```text
+https://example.com 에 접속해서 스크린샷을 찍고,
+페이지 구조를 설명해줘.
+```
+
+5. 폼 입력이 필요한 사이트에서도 시도한다
+
+```text
+https://www.google.com 에 접속해서 검색창에 "Playwright MCP"를 입력하고
+검색 결과 상위 3개를 알려줘.
+```
 
 ### 관찰 포인트
 
-- 어떤 설명이 도구 선택에 영향을 주는가
+- 에이전트가 어떤 도구를 어떤 순서로 호출하는가
+- 접근성 트리 기반 정보와 스크린샷 정보의 차이는 무엇인가
 - 승인 요청은 언제 나타나는가
-- 결과를 그대로 믿으면 위험한 지점은 어디인가
-- 출력이 실제로 유용한가, 아니면 후처리가 더 필요한가
+- 실패하는 경우는 어떤 사이트이고 왜 실패하는가
 
 ### 결과 기록 예시
 
 ```markdown
-- 호출 도구: read_file
-- 입력: path=docs/notes.md
-- 결과: 파일 내용 정상 반환
-- 검증: 실제 파일과 내용 비교 완료
-- 관찰: 설명이 짧아도 도구 선택은 잘 되었으나, 경로 오입력 시 오류 메시지가 불명확했음
+- 호출 도구: browser_navigate → browser_snapshot
+- 입력: url=https://news.ycombinator.com
+- 결과: 상위 30개 게시물 제목, 점수, 댓글 수 반환
+- 검증: 실제 사이트와 비교 완료
+- 관찰: 접근성 트리만으로 충분한 정보를 얻을 수 있었음. 로그인 필요 사이트에서는 실패함
 ```
+
+### 2026년 참고: MCP vs CLI
+
+- 파일 시스템 접근이 가능한 에이전트(GitHub Copilot Coding Agent 등)에서는 **Playwright CLI**(`@playwright/cli`)가 MCP보다 토큰 효율이 약 4배 높음
+- MCP는 세션당 약 114,000 토큰, CLI는 약 27,000 토큰을 사용함
+- CLI는 스냅샷과 스크린샷을 디스크에 YAML 파일로 저장하고 에이전트가 필요한 부분만 읽음
+- 파일 시스템 접근이 없는 클라이언트(Cursor 등)에서는 MCP가 여전히 권장됨
 
 ---
 
-## 3.5 실습 2: Skill / Instruction 파일 작성
+## 3.5 실습 2: 외부 Skills 탐색하고 설치하기
+
+### 실습 목표
+
+- 커뮤니티와 공식 마켓플레이스에서 유용한 skill을 찾아 설치하고, 실제 작업에 적용한다
+
+### Skill이란
+
+- Skill은 에이전트가 특정 작업을 수행할 때 따르는 **규칙과 절차를 담은 파일**이다
+- MCP가 "무엇을 할 수 있는가"라면, Skill은 "어떻게 잘 할 것인가"에 해당한다
+- GitHub Copilot에서는 `.github/skills/` 디렉토리에 `SKILL.md` 파일로 정의한다
+- Copilot coding agent, Copilot CLI, VS Code Insiders에서 지원된다
+
+### GitHub Copilot Agent Skills 구조
+
+```text
+.github/skills/<skill-name>/
+  SKILL.md          # 필수 — 스킬 정의 파일
+  examples/          # 선택 — 예시 파일
+  templates/         # 선택 — 템플릿 파일
+```
+
+- `SKILL.md`에는 YAML 프론트매터와 본문을 함께 적음
+- **중요 제약**: `name` 필드는 소문자+하이픈만 허용하며, **부모 디렉토리 이름과 반드시 일치**해야 함
+- `description`은 Copilot이 언제 이 skill을 자동 선택할지 결정하는 핵심 필드
+
+```markdown
+---
+name: doc-summary
+description: Summarize documents and save to output/. Use for file summarization, documentation review.
+---
+
+# Document Summary Skill
+
+Read the target document, summarize it, save the result in output/, and list 3 verification checks.
+```
+
+### 학생에게 유용한 외부 Skill 예시
+
+#### 추천 1: 코드 요약·문서화 Skill
+
+과제 코드를 자동으로 요약하고 문서를 생성한다.
+
+```markdown
+---
+name: code-documenter
+description: Generate documentation for source code. Use when asked to document, explain, or summarize code files.
+---
+
+# Code Documentation Skill
+
+1. Read the target source file
+2. Summarize the purpose of each function/class
+3. List input/output for public APIs
+4. Save the result to output/<filename>-docs.md
+5. Include 3 verification checks at the end
+```
+
+- 이 skill을 `.github/skills/code-documenter/SKILL.md`에 저장하면 Copilot이 자동으로 인식한다
+- 학생은 이 예시를 기반으로 자신의 과제에 맞는 skill을 직접 작성해 본다
+
+#### 추천 2: 테스트 생성 Skill
+
+작성한 코드에 대해 테스트 코드를 자동으로 생성한다.
+
+```markdown
+---
+name: test-generator
+description: Generate test cases for source code. Use when asked to write tests, create test files, or verify code.
+---
+
+# Test Generator Skill
+
+1. Read the target source file
+2. Identify all public functions and edge cases
+3. Generate test cases using the project's testing framework
+4. Include at least: 1 happy path, 1 edge case, 1 error case per function
+5. Save to tests/<filename>_test.py (or appropriate extension)
+6. Run the tests and report results
+```
+
+#### 추천 3: 과제 제출 검증 Skill
+
+제출 전 과제가 요구사항을 충족하는지 체크한다.
+
+```markdown
+---
+name: assignment-checker
+description: Verify assignment deliverables are complete. Use when asked to check, validate, or review homework.
+---
+
+# Assignment Checker Skill
+
+1. Read the assignment requirements from the specified file
+2. List all required deliverables
+3. Check each deliverable exists and is non-empty
+4. Verify output/ directory contains expected files
+5. Generate a checklist with ✅/❌ status for each item
+6. Save the checklist to output/assignment-check.md
+```
+
+### 오픈소스 Skill 참고 자료
+
+- Agent Skills 표준은 여러 에이전트 도구가 동일한 `SKILL.md` 형식을 공유함
+- 아래 저장소에서 다른 사람이 만든 skill을 참고하고 자신의 것으로 변형할 수 있다
+
+| 사이트 | URL | 설명 |
+|--------|-----|------|
+| Agent Skills 표준 | agentskills.io | 오픈 표준 명세 |
+| GitHub Agent Skills 문서 | docs.github.com/en/copilot/concepts/agents/about-agent-skills | 공식 가이드 |
+| Anthropic Skills | github.com/anthropics/skills | 공식 skill (구조 참고) |
+| awesome-claude-skills | github.com/travisvn/awesome-claude-skills | 커뮤니티 skill 디렉토리 |
+
+### 수행 단계
+
+1. 위 추천 skill 중 1개를 `.github/skills/`에 만든다
+2. skill 없이 같은 작업을 한 번 수행한다
+3. skill을 적용한 후 같은 작업을 다시 수행한다
+4. 두 결과를 비교한다
+
+### 비교 실습 예시
+
+**skill 없이:**
+
+```text
+이 Python 코드를 리뷰해줘.
+```
+
+**code-review skill 설치 후:**
+
+```text
+이 Python 코드를 리뷰해줘.
+보안, 테스트 가능성, 유지보수성 기준으로 분석해줘.
+```
+
+### 관찰 포인트
+
+- skill이 적용되었을 때 출력 구조가 얼마나 더 체계적인가
+- 같은 요청에 대해 검토 항목이 더 구체적으로 나오는가
+- 어떤 종류의 skill이 학업에 실질적으로 도움이 되는가
+
+---
+
+## 3.6 실습 3: Skill / Instruction 파일 직접 작성
 
 ### 실습 목표
 
@@ -338,21 +490,6 @@
 - 누락이 줄어들었는가
 - 검증 항목이 더 명확해졌는가
 - 안전성이 높아졌는가
-
-### GitHub Copilot 실습 예시
-
-- 규칙 파일 없이
-
-```text
-output/summary.md에 docs/notes.md 요약을 저장해줘.
-```
-
-- 규칙 파일 또는 skill 적용 후
-
-```text
-docs/agent-rules.md의 규칙을 따르면서 docs/notes.md를 요약해줘.
-반드시 output/summary.md에 저장하고, 검증 항목도 함께 적어줘.
-```
 
 ### Agent Skills 실습 예시
 
@@ -415,189 +552,16 @@ applyTo: "src/components/**/*.ts,src/components/**/*.tsx"
 
 ---
 
-## 3.6 실습 3: 최소 MCP 서버 직접 만들기
+## 3.7 테스트와 검증
 
-### 실습 목표
-
-- 가장 작은 형태의 MCP 서버를 직접 구현하고 테스트한다
-
-### 구현 예시
-
-- 현재 시각 반환
-- 지정 디렉토리 파일 목록 반환
-- 간단한 계산
-- 로컬 메모 읽기
-
-### 설계 원칙
-
-- 이름이 명확해야 함
-- 설명이 구체적이어야 함
-- 입력이 단순해야 함
-- 오류 메시지가 읽기 쉬워야 함
-- 가능한 경우 읽기 전용으로 시작하는 것이 안전함
-
-### 최소 서버의 의미
-
-- 이 실습의 목적은 대형 서버를 만드는 것이 아님
-- 목적은 "에이전트가 도구를 부르는 구조"를 눈으로 확인하는 것
-- 즉, 최소 서버는 개념 증명이자 이후 확장의 출발점임
-
-### 설계 문서에 포함할 항목
-
-- 도구 이름
-- 도구 설명
-- 입력 파라미터
-- 예상 출력
-- 금지하거나 제한할 동작
-
-### GitHub Copilot 활용 방식
-
-- Agent mode에서 다음과 같이 요청한다
-
-```text
-Python으로 최소 MCP 서버 예제를 만들어줘.
-요구사항:
-- 읽기 전용 도구 1개만 제공
-- 입력과 오류 처리가 명확해야 함
-- 테스트 방법도 docs/server-design.md에 적어줘
-```
-
-- 학생은 Copilot이 만든 코드를 그대로 수락하지 말고 다음을 직접 확인해야 함
-  - 도구 설명이 충분히 구체적인가
-  - 입력 검증이 있는가
-  - 잘못된 입력에 대한 오류 메시지가 읽기 쉬운가
-  - 테스트 절차가 실제로 가능한가
-
----
-
-## 3.7 실습 4: GitHub Copilot CLI plugin 실습
-
-### 실습 목표
-
-- GitHub Copilot에서 plugin이 무엇을 묶는지 실제로 확인한다
-- plugin 안에 skills, MCP 설정, agents를 함께 담을 수 있다는 점을 체험한다
-
-### 사전 안내: `gh copilot` → 독립 `copilot` CLI
-
-- 구 `gh copilot` 확장(suggest, explain)은 **2025년 10월 25일 종료**됨
-- 이후 독립 실행 파일인 **`copilot` CLI**가 이를 완전 대체함 (2026년 2월 25일 GA)
-- 수업에서 `copilot` 명령은 모두 이 독립 CLI를 가리킴
-
-### 왜 CLI plugin을 다루는가
-
-- GitHub Copilot의 plugin은 현재 **Copilot CLI**에서 가장 명확하게 드러남
-- 공식 문서 기준 plugin은 재사용 가능한 설치 단위이며, 여기에 다음 요소를 함께 넣을 수 있음
-  - agents
-  - skills
-  - hooks
-  - MCP server configurations
-
-### 수행 단계
-
-1. `my-plugin/` 디렉토리를 만든다
-2. `plugin.json`을 만든다 (위치: 루트, `.github/plugin/`, 또는 `.claude-plugin/` 중 택 1)
-3. `skills/` 아래에 간단한 skill 하나를 만든다
-4. 필요하면 `.mcp.json`에 MCP 서버 설정 하나를 넣는다
-5. 로컬에서 plugin을 설치한다
-6. plugin이 실제로 로드되었는지 확인한다
-
-### 권장 구조
-
-```text
-my-plugin/
-  plugin.json            # 루트에 두거나 .github/plugin/ 아래에 둘 수 있음
-  skills/
-    doc-summary/
-      SKILL.md
-  .mcp.json
-```
-
-### 최소 `plugin.json` 예시
-
-```json
-{
-  "name": "my-dev-tools",
-  "description": "Week 3 practice plugin",
-  "version": "1.0.0",
-  "skills": ["skills/"],
-  "mcpServers": ".mcp.json"
-}
-```
-
-### 설치와 확인
-
-```bash
-# 로컬 디렉토리에서 설치
-copilot plugin install ./my-plugin
-
-# 마켓플레이스에서 설치
-copilot plugin install PLUGIN-NAME@MARKETPLACE-NAME
-
-# GitHub 저장소에서 설치
-copilot plugin install OWNER/REPO
-
-# 설치 확인
-copilot plugin list
-```
-
-- 대화형 세션 안에서는 다음 명령으로 확인 가능
-  - `/plugin list`
-  - `/skills list`
-
-### 실습의 핵심 관찰점
-
-- plugin은 단순한 "추가 기능 하나"가 아님
-- 실제로는 **skills + MCP + agents를 묶어 배포하는 패키지**에 가깝다
-- 따라서 plugin은 MCP나 skill과 경쟁 개념이 아니라 **포장 단위**임
-
-### 왜 이 과제가 필요한가
-
-- 학생은 plugin을 "MCP와 비슷한 것"으로 착각하기 쉬움
-- 이 실습을 통해 다음 관계를 분명히 이해해야 함
-  - MCP = 도구 연결
-  - Skill = 작업 규칙
-  - Plugin = 여러 요소를 묶는 설치 단위
-
----
-
-## 3.8 실습 5: hooks와 memory를 붙여 보기
-
-### 실습 목표
-
-- 규칙을 문서로만 두지 않고 자동 실행과 지속 문맥으로 확장하는 감각을 익힌다
-
-### hooks 실습 아이디어
-
-- 다음 중 하나를 고른다
-  - 작업 완료 후 `output/` 생성 여부 검사
-  - 결과 파일이 없으면 실패로 간주
-  - 테스트가 없으면 경고 출력
-
-### memory 실습 아이디어
-
-- 다음 문맥 중 하나를 에이전트 기본 기억으로 정리한다
-  - 이 프로젝트의 출력 위치
-  - 기본 검증 절차
-  - 금지 명령 또는 주의 명령
-
-### 관찰 포인트
-
-- 문서 규칙만 둘 때와 hook을 붙였을 때 무엇이 달라지는가
-- 같은 규칙을 memory에 둘 때 세션 간 일관성이 높아지는가
-- skill, instruction, hook, memory가 서로 어떤 역할을 나누는가
-
----
-
-## 3.9 테스트와 검증
-
-### 3.9.1 AI 없이 단독 테스트하는 법
+### 3.7.1 AI 없이 단독 테스트하는 법
 
 - MCP 서버는 가능하면 AI 없이도 테스트할 수 있어야 함
 - 이유:
   - 문제 원인을 분리하기 쉬움
   - 모델 출력과 서버 오류를 구분할 수 있음
 
-### 3.9.2 정상 입력 / 오류 입력 테스트
+### 3.7.2 정상 입력 / 오류 입력 테스트
 
 - 최소한 두 종류의 테스트가 필요함
   - 정상 입력
@@ -607,7 +571,7 @@ copilot plugin list
   - 정상 경로 입력 시 파일 목록 반환
   - 존재하지 않는 경로 입력 시 읽기 쉬운 오류 반환
 
-### 3.9.3 로그와 산출물 남기기
+### 3.7.3 로그와 산출물 남기기
 
 - 다음 파일을 남기는 습관을 들임
   - 실행 로그
@@ -618,283 +582,41 @@ copilot plugin list
 
 ---
 
-## 3.10 제출물
+## 3.8 제출물
 
-- MCP 연결 설정 파일
+- Playwright MCP 연결 설정 파일 및 실행 로그
 - skill 또는 instruction 파일 1개
-- 최소 MCP 서버 코드
-- Copilot CLI plugin 디렉토리 1개
-- hook 또는 자동 검증 설계 메모 1개
-- project memory 초안 1개
+- skill 적용 전후 비교 결과 문서
 - 테스트 로그
-- 비교 결과 문서
 - 업데이트된 체크리스트
 
 ---
 
-## 3.11 핵심 정리
+## 3.9 핵심 정리
 
 - MCP는 도구 연결이다
 - Skills / Instructions는 작업 규칙이다
-- Plugins / Apps / Connectors는 제품별 확장 표면이다
-- Hooks는 자동 검사와 자동 실행의 연결점이다
-- Memory는 프로젝트 문맥을 지속시키는 계층이다
-- 실제 활용 역량은 이 층들을 함께 다룰 때 생긴다
+- 외부 MCP 서버(Playwright 등)를 설치하면 에이전트의 능력이 크게 확장된다
+- 외부 skill을 탐색·설치하면 작업 품질과 일관성이 높아진다
+- 좋은 설계는 필요한 도구만 필요한 시점에 로드하는 것이다
+- 실제 활용 역량은 MCP와 Skills를 함께 다룰 때 생긴다
 - 3주차의 산출물은 이후 LangChain, LangGraph, 멀티에이전트 실습의 입력 자산이 된다
 
 ---
 
-## 부록 A. Claude Code로 수행하는 동일 실습
-
-- 본문 실습은 GitHub Copilot 중심으로 진행하지만, 같은 층위를 Claude Code에서도 거의 그대로 실습할 수 있다
-- Claude Code는 터미널 중심 도구이지만 `plugins`, `skills`, `MCP`, `hooks`, `memory`가 비교적 명확하게 드러나므로 구조 학습에 적합하다
-
-### A.1 플러그인 둘러보기
-
-- Claude Code에서 플러그인 UI를 열려면 다음 명령을 사용한다
-
-```text
-/plugin
-```
-
-- 여기서 설치된 플러그인과 마켓플레이스를 확인할 수 있다
-- 공식 Anthropic 플러그인 마켓플레이스는 보통 기본 제공된다
-
-### A.2 플러그인 설치
-
-- 가장 쉬운 방법은 `/plugin` 화면의 `Discover` 탭에서 원하는 플러그인을 찾는 것이다
-- 명령으로 바로 설치할 수도 있다
-
-```text
-/plugin install <plugin-name>@claude-plugins-official
-```
-
-- 설치 후에는 보통 바로 사용할 수 있다
-- 학생은 다음을 확인한다
-  - 플러그인이 실제로 설치되었는가
-  - 새 명령이나 skill이 보이는가
-
-### A.3 플러그인으로 무엇을 묶을 수 있는가
-
-- Claude Code plugin은 보통 다음 요소를 묶어 공유하는 단위다
-  - `skills`
-  - `agents`
-  - `hooks`
-  - `MCP servers`
-- 따라서 plugin은 "추가 기능 하나"라기보다 **재사용 가능한 작업 패키지**에 가깝다
-
-### A.4 직접 플러그인 만들기
-
-- 기본 구조 예시:
-
-```text
-my-first-plugin/
-  .claude-plugin/
-    plugin.json
-  skills/
-    hello/
-      SKILL.md
-```
-
-- 최소 `plugin.json` 예시:
-
-```json
-{
-  "name": "my-first-plugin",
-  "description": "Week 3 plugin practice",
-  "version": "1.0.0"
-}
-```
-
-- 최소 `SKILL.md` 예시:
-
-```markdown
----
-description: Summarize a document and save the result to output/
----
-
-Read the target document, summarize it, save the result in output/, and list 3 verification checks.
-```
-
-### A.5 로컬에서 플러그인 테스트
-
-- 직접 만든 플러그인은 다음처럼 로컬에서 바로 테스트할 수 있다
-
-```bash
-claude --plugin-dir ./my-first-plugin
-# 여러 플러그인을 동시에 로드할 수도 있음
-claude --plugin-dir ./plugin-one --plugin-dir ./plugin-two
-```
-
-- 실행 후 다음처럼 호출해 본다
-
-```text
-/my-first-plugin:hello
-```
-
-- **중요**: 플러그인 내부의 skill은 **네임스페이스가 붙어** `/플러그인이름:스킬이름` 형태로 호출됨. 이는 다른 플러그인의 skill과 이름이 충돌하지 않도록 하기 위함임
-
-- 학생은 다음을 확인한다
-  - 플러그인 명령이 보이는가
-  - skill이 실제로 로드되는가
-  - 출력 형식이 의도대로 유지되는가
-  - 네임스페이스 호출이 정상 동작하는가
-
-### A.6 Skills 실습
-
-- Claude Code 공식 문서 기준 skills는 `SKILL.md` 파일로 확장된다
-- 기본 실습 구조:
-
-```text
-.claude/
-  skills/
-    doc-summary/
-      SKILL.md
-```
-
-- 요청 예시:
-
-```text
-docs/notes.md를 요약해줘.
-가능하면 skill을 활용하고 output/summary.md에 저장해줘.
-```
-
-- 필요하면 직접 호출할 수도 있다
-
-```text
-/doc-summary
-```
-
-### A.7 MCP 서버 연결
-
-- Claude Code에서 MCP 서버를 추가할 때는 다음 흐름을 사용한다
-
-```bash
-# HTTP 서버 (권장)
-claude mcp add --transport http github https://api.example.com/mcp/
-
-# stdio 서버
-claude mcp add --transport stdio my-server -- python server.py
-
-# 관리 명령
-claude mcp list
-claude mcp get <name>
-claude mcp remove <name>
-```
-
-- 설정 범위 (scope):
-  - `local` (기본값): 현재 프로젝트, 개인 설정 (`~/.claude.json`에 저장)
-  - `project`: 팀 공유 설정 (프로젝트 루트 `.mcp.json`에 저장, git 커밋 가능)
-  - `user`: 모든 프로젝트 공통, 개인 설정 (`~/.claude.json`에 저장)
-
-```bash
-claude mcp add --scope local ...     # 기본값, 나만 사용
-claude mcp add --scope project ...   # .mcp.json에 저장, 팀 공유
-claude mcp add --scope user ...      # 모든 프로젝트에서 나만 사용
-```
-
-- **참고**: SSE 트랜스포트는 deprecated. HTTP 트랜스포트를 사용할 것
-
-- 실습에서는 다음을 확인한다
-  - 서버가 실제로 목록에 보이는가
-  - 도구 호출이 가능한가
-  - 권한 범위가 적절한가
-
-### A.8 Hooks, Settings, Memory
-
-- Claude Code는 plugin, skill, MCP 외에도 다음 계층을 분리해서 볼 수 있다
-  - **Hooks**: 특정 이벤트 전후 자동 실행
-  - **Settings**: 기본 행동 규칙
-  - **Memory**: 프로젝트 맥락 유지
-
-#### Hooks
-
-- hooks 설정 파일 위치:
-  - `~/.claude/settings.json` — 모든 프로젝트, 개인용
-  - `.claude/settings.json` — 프로젝트용, 커밋 가능
-  - `.claude/settings.local.json` — 프로젝트용, gitignored
-- 주요 hook 이벤트: `PreToolUse` (도구 실행 전 차단 가능), `PostToolUse` (실행 후 검사), `Stop` (응답 완료 시), `UserPromptSubmit` (프롬프트 제출 후), `SessionStart` 등
-- hook 타입: `command` (셸 명령), `http` (HTTP POST), `prompt` (Claude 모델 평가)
-- `/hooks` 명령으로 인터랙티브하게 설정할 수도 있음
-
-- hooks 실습 예:
-  - 작업 완료 후(`Stop`) 로그 저장
-  - 명령 실행 전(`PreToolUse`) 위험 명령 차단
-  - 특정 파일 변경 뒤(`PostToolUse`) 검사 스크립트 실행
-
-#### Memory
-
-- Claude Code의 메모리는 두 가지 시스템으로 구분됨
-  - **CLAUDE.md** (사용자가 작성): 프로젝트 규칙과 문맥을 적는 파일
-    - `./CLAUDE.md` — 프로젝트 수준, git 커밋 대상
-    - `~/.claude/CLAUDE.md` — 개인, 모든 프로젝트
-    - `./CLAUDE.local.md` — 개인 프로젝트용, gitignored
-  - **Auto memory** (Claude가 자동 기록): `~/.claude/projects/<project>/memory/` 에 저장
-    - `MEMORY.md` 첫 200줄이 매 세션 로드됨
-    - `/memory` 명령으로 상태 확인 및 편집 가능
-- `.claude/rules/` 디렉토리에 경로별 규칙 파일을 넣을 수도 있음 (`paths:` 프론트매터로 스코핑)
-
-- settings / memory 실습 예:
-  - 출력은 항상 `output/`
-  - 파괴적 명령은 승인 전 금지
-  - 테스트 가능 시 먼저 테스트
-
-### A.9 최소 MCP 서버 실습
-
-- 요청 예시:
-
-```text
-Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
-도구 설명, 입력 검증, 오류 메시지, 테스트 절차를 함께 포함해줘.
-```
-
-- 학생은 다음을 직접 검토한다
-  - 설명이 구체적인가
-  - 입력 검증이 있는가
-  - 오류 메시지가 읽기 쉬운가
-  - 테스트 절차가 실제로 가능한가
-
-### A.10 설치 문제 해결
-
-- 문제가 생기면 다음 순서로 점검한다
-  1. `/plugin`에서 설치 상태 확인
-  2. 플러그인 이름과 마켓플레이스 이름이 정확한지 확인
-  3. 로컬 개발 중이면 `claude --plugin-dir ...`로 직접 테스트
-  4. MCP가 함께 묶여 있다면 `claude mcp list`로 서버 등록 상태 확인
-  5. settings, hooks, skills 경로가 구조와 맞는지 확인
-
-- 무조건 `~/.claude`를 지우는 방식은 마지막 수단으로만 사용한다
-
-### A.11 주의사항
-
-- 영상에서 자주 보이는 다음 표현은 공식 기능으로 단정하면 안 된다
-  - `Remote Control`
-  - `Ralph Loop`
-- 커뮤니티 플러그인, 외부 도구, 개인 워크플로우일 가능성이 있으므로 공식 강의 본문에는 넣지 않는 편이 안전하다
-
-### A.12 Claude Code 부록의 의도
-
-- 같은 과제를 Copilot과 Claude Code에서 각각 수행해 보면 차이가 잘 드러난다
-  - Copilot: IDE 중심, Copilot Chat + CLI plugin 쪽이 명확
-  - Claude Code: 터미널 중심, MCP·Skills·Plugins·Hooks·Memory가 한 체계 안에서 잘 드러남
-- 부록의 목적은 우열 비교가 아니라 **도구별 작업 감각 차이**를 체험하는 것임
-
----
-
-## 부록 B. ChatGPT / Codex로 수행하는 동일 실습
+## 부록 A. ChatGPT / Codex로 수행하는 동일 실습
 
 - OpenAI 쪽은 이름이 조금 다르지만, 같은 층위로 매핑할 수 있다
   - MCP = 외부 도구 연결
   - Skills = Codex app/CLI/IDE에서의 skill 또는 rules 계층
-  - Plugin에 가까운 개념 = ChatGPT Apps
 
-### B.1 ChatGPT에서의 "plugin"은 지금 무엇인가
+### A.1 ChatGPT에서의 외부 도구 연결
 
 - 2025년 12월부터 OpenAI는 connectors를 **Apps**로 통합해 안내함
-- 따라서 ChatGPT 쪽에서 plugin과 가장 비슷한 현재 개념은 **Apps**라고 보는 편이 정확함
+- ChatGPT 쪽에서 외부 기능을 붙이는 현재 개념은 **Apps**임
 - 학생은 여기서 "ChatGPT 안에 외부 기능을 붙인다"는 감각을 익히면 된다
 
-### B.2 ChatGPT Apps 실습
+### A.2 ChatGPT Apps 실습
 
 - ChatGPT에서 앱 디렉터리를 열고 앱 하나를 연결한다
 - 권장 실습:
@@ -911,19 +633,17 @@ Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
   - 단순 채팅과 무엇이 다른가
   - ChatGPT Apps가 MCP와 같은 표준인지, 아니면 제품 표면인지 구분할 수 있는가
 
-### B.3 ChatGPT의 MCP 실습
+### A.3 ChatGPT의 MCP 실습
 
 - ChatGPT는 2025년 9월부터 **Developer Mode**를 통해 MCP를 지원함
   - 설정 경로: Settings → Connectors → Advanced → Developer Mode
-- **중요 제약**: ChatGPT MCP는 **원격 HTTPS 서버만 연결 가능**. localhost 서버에는 연결할 수 없음 (Claude Desktop과의 핵심 차이)
+- **중요 제약**: ChatGPT MCP는 **원격 HTTPS 서버만 연결 가능**. localhost 서버에는 연결할 수 없음
 - ChatGPT App Directory에 등록된 서드파티 앱은 내부적으로 MCP 서버로 구현됨
-- 수업에서는 구현보다 개념 구분에 집중한다
 - 핵심 메시지:
   - ChatGPT Apps는 사용자 표면
   - MCP는 그 뒤쪽의 도구 연결 표준
-  - Apps SDK(오픈소스)는 MCP를 확장해 인터랙티브 UI를 함께 제공하는 프레임워크
 
-### B.4 Codex에서의 Skills / Rules 실습
+### A.4 Codex에서의 Skills / Rules 실습
 
 - Codex는 ChatGPT 계정으로 사용하는 코딩 에이전트이며, 다음 표면을 함께 제공한다
   - Terminal / CLI (Rust 기반 오픈소스)
@@ -932,7 +652,7 @@ Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
   - GitHub (`@codex` 태그로 이슈·PR에서 호출)
   - Slack (`@Codex` 태그로 채널에서 호출)
   - ChatGPT iOS 앱
-- 공식 안내 기준 Codex는 skills, automations, rules, `AGENTS.md` 기능을 제공한다
+- 공식 안내 기준 Codex는 skills, rules, `AGENTS.md` 기능을 제공한다
 - **`AGENTS.md`**: 저장소 수준의 지침 파일로, Codex가 프로젝트를 이해하는 방법을 정의함
   - 우선순위: `AGENTS.override.md` > `AGENTS.md` > `TEAM_GUIDE.md` > `.agents.md`
 - 3주차 실습에서는 다음과 같이 수행한다
@@ -952,52 +672,32 @@ Python으로 읽기 전용 최소 MCP 서버를 만들어줘.
 이 규칙을 지키면서 docs/notes.md를 다시 요약해줘.
 ```
 
-### B.5 Codex의 MCP 실습
+### A.5 Codex의 MCP 실습
 
 - Codex는 CLI와 IDE 확장 모두에서 MCP를 지원함
 - Codex CLI 자체가 **MCP 서버로도 동작**할 수 있어, OpenAI Agents SDK 등 외부 에이전트가 Codex를 도구로 호출하는 구조도 가능함
 - 수업에서는 다음 수준까지 실습하는 것을 목표로 한다
   - Codex가 MCP 서버를 쓰는 환경이라는 점을 이해한다
   - 같은 작업을 "도구 없이"와 "MCP 연결 후" 비교한다
-  - 필요한 경우 API 쪽에서는 MCP server 문서와 Responses tool 문서를 참조한다
 
-### B.6 Codex / ChatGPT에서 추가로 볼 것
-
-- **Apps**
-  - ChatGPT 안에서 기능을 붙이는 현재형 표면
-- **Rules / Skills**
-  - 반복 작업 규칙을 고정하는 계층
-  - Codex는 `~/.codex/rules/` 또는 프로젝트 수준 rules 디렉토리를 지원하며, allow/prompt/forbidden 모델로 권한을 관리함
-- **AGENTS.md**
-  - 저장소 수준의 프로젝트 지침 파일 (CLAUDE.md와 유사한 역할)
-- **Automations**
-  - 반복 작업을 자동 실행 흐름으로 옮기는 계층
-- **Memory**
-  - 2025년 4월부터 단순 메모 저장을 넘어 **전체 과거 대화 참조** 기능이 추가됨
-  - Plus/Pro 사용자는 전체 대화 기록 기반 메모리, Free 사용자는 제한적 최근 대화 참조를 사용함
-  - Settings → Personalization에서 저장된 메모리를 확인·편집·삭제 가능
-
-### B.7 OpenAI 부록의 의도
+### A.6 OpenAI 부록의 의도
 
 - OpenAI 표면은 이름이 바뀌기 쉬우므로 학생이 가장 먼저 익혀야 할 것은 메뉴 이름이 아니라 구조임
 - 이 부록의 핵심 대응 관계:
-  - GitHub Copilot plugin ↔ ChatGPT Apps
+  - GitHub Copilot MCP ↔ ChatGPT Apps / Developer Mode MCP
   - GitHub Skills ↔ Codex skills / rules
   - GitHub custom instructions ↔ Codex AGENTS.md
-  - GitHub hooks ↔ Codex automations
-  - GitHub memory ↔ OpenAI memory
-  - GitHub MCP ↔ OpenAI MCP integrations
 - 목적은 특정 제품 조작법 암기가 아니라, **동일한 실습 구조를 다른 벤더 표면으로 번역하는 능력**을 기르는 것임
 
 ---
 
-## 부록 C. Gemini CLI로 수행하는 동일 실습
+## 부록 B. Gemini CLI로 수행하는 동일 실습
 
-- Google의 터미널 기반 AI 코딩 에이전트로, Claude Code와 가장 비슷한 구조를 가진다
-- MCP, Skills, Extensions, Hooks, Memory 계층이 모두 존재하며, 일부는 Claude Code보다 세분화되어 있다
+- Google의 터미널 기반 AI 코딩 에이전트로, GitHub Copilot CLI와 비슷한 구조를 가진다
+- MCP, Skills, Extensions 계층이 모두 존재한다
 - 2026년 3월 기준 최신 버전: **v0.34.0**
 
-### C.1 설치
+### B.1 설치
 
 ```bash
 # npm으로 설치
@@ -1009,9 +709,9 @@ curl -fsSL https://geminicli.com/install.sh | bash
 - 설치 후 `gemini` 명령으로 실행한다
 - Google 계정 인증이 필요하며, Gemini API 키 또는 Google Cloud 프로젝트를 연결한다
 
-### C.2 Instructions — GEMINI.md
+### B.2 Instructions — GEMINI.md
 
-- Claude Code의 `CLAUDE.md`에 대응하는 파일이 `GEMINI.md`이다
+- GitHub Copilot의 `copilot-instructions.md`에 대응하는 파일이 `GEMINI.md`이다
 - 계층 구조:
 
 | 위치 | 범위 |
@@ -1022,24 +722,10 @@ curl -fsSL https://geminicli.com/install.sh | bash
 
 - 모든 발견된 파일은 합쳐져서 매 프롬프트에 포함됨
 - `@file.md` 구문으로 다른 파일을 import할 수 있음
-- 설정에서 파일명을 변경할 수 있어 `AGENTS.md`도 읽기 가능:
 
-```json
-{
-  "context": {
-    "fileName": ["AGENTS.md", "GEMINI.md"]
-  }
-}
-```
+### B.3 Skills 실습
 
-- 관련 명령:
-  - `/memory show` — 현재 로드된 전체 컨텍스트 확인
-  - `/memory refresh` — 파일 변경 후 다시 로드
-  - `/memory add <텍스트>` — 전역 `GEMINI.md`에 내용 추가
-
-### C.3 Skills 실습
-
-- Claude Code와 **같은 오픈 표준**을 사용한다 — `SKILL.md` 형식이 동일함
+- GitHub Copilot과 **같은 오픈 표준**을 사용한다 — `SKILL.md` 형식이 동일함
 - 스킬 위치:
 
 | 위치 | 범위 |
@@ -1054,7 +740,7 @@ curl -fsSL https://geminicli.com/install.sh | bash
   3. 사용자 동의 후 전체 `SKILL.md`와 폴더 구조가 컨텍스트에 로드
 - 관리 명령: `/skills` (인터랙티브) 또는 `gemini skills` (터미널)
 
-### C.4 MCP 서버 연결
+### B.4 MCP 서버 연결
 
 - `.gemini/settings.json` 또는 `~/.gemini/settings.json`에서 설정한다
 - 세 가지 트랜스포트 지원: **stdio**, **SSE**, **HTTP Streaming**
@@ -1062,17 +748,15 @@ curl -fsSL https://geminicli.com/install.sh | bash
 ```json
 {
   "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest"]
+    },
     "github": {
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
       "env": {
         "GITHUB_TOKEN": "$GITHUB_TOKEN"
-      }
-    },
-    "remoteServer": {
-      "httpUrl": "http://localhost:3000/mcp",
-      "headers": {
-        "Authorization": "Bearer token"
       }
     }
   }
@@ -1083,13 +767,11 @@ curl -fsSL https://geminicli.com/install.sh | bash
   - `trust`: `true`면 도구 호출 확인을 건너뜀
   - `includeTools` / `excludeTools`: 특정 도구만 허용하거나 차단
   - `timeout`: 요청 타임아웃 (기본 600,000ms)
-  - `$VAR_NAME` 구문으로 환경 변수 참조 가능
-- Google Cloud 서비스용 공식 MCP 서버 제공: Maps, Cloud Run, Cloud Storage, AlloyDB 등
 
-### C.5 Extensions (확장 시스템)
+### B.5 Extensions (확장 시스템)
 
-- Claude Code에는 없는 Gemini CLI만의 강점이다
-- 스킬 + MCP 서버 + 커맨드 + 훅 + 서브에이전트를 **하나의 패키지로 묶어** 설치·공유할 수 있다
+- Gemini CLI만의 강점이다
+- 스킬 + MCP 서버 + 커맨드를 **하나의 패키지로 묶어** 설치·공유할 수 있다
 - 설치/관리:
 
 ```bash
@@ -1101,70 +783,37 @@ gemini extensions install ./my-extension
 
 # 새 확장 프로젝트 생성
 gemini extensions new path/to/directory mcp-server
-
-# 개발 모드 (심볼릭 링크)
-gemini extensions link
 ```
 
 - [공식 카탈로그](https://geminicli.com/extensions/)에서 Google, Figma, Shopify, Stripe 등 파트너 확장을 탐색할 수 있음
-- Extension은 병렬 로드되어 시작 속도에 큰 영향을 주지 않음
 
-### C.6 Hooks
+### B.6 Gemini CLI 부록의 의도
 
-- Claude Code의 5개 이벤트보다 세분화된 **11개 hook 이벤트**를 제공한다
-
-| 이벤트 | 용도 |
-|--------|------|
-| `SessionStart` / `SessionEnd` | 리소스 초기화/정리 |
-| `BeforeAgent` / `AfterAgent` | 컨텍스트 추가, 프롬프트 검증, 출력 검토 |
-| `BeforeModel` / `AfterModel` | 프롬프트 수정, 모델 교체, 응답 필터링 |
-| `BeforeToolSelection` | 사용 가능한 도구 필터링 |
-| `BeforeTool` / `AfterTool` | 인자 검증, 실행 차단, 결과 후처리 |
-| `PreCompress` | 컨텍스트 압축 전 상태 저장 |
-| `Notification` | 외부 로깅 전달 |
-
-- `settings.json`에서 설정하며, regex 매처와 타임아웃을 지원한다
-
-### C.7 Subagents (실험적)
-
-- 메인 세션 안에서 독립 컨텍스트를 가진 서브에이전트를 실행할 수 있다
-- 각 서브에이전트는 별도 시스템 프롬프트, 제한된 도구셋을 가지며 토큰을 절약한다
-- Plan Mode의 리서치 서브에이전트가 대표적인 활용 사례이다
-
-### C.8 Plan Mode
-
-- v0.34.0부터 **기본 활성화**되어 있다
-- 읽기 전용 모드에서 코드베이스를 분석하고 구조화된 계획을 생성한 후 실행으로 넘어간다
-- Claude Code에는 없는 기능이다
-
-### C.9 Gemini CLI 부록의 의도
-
-- Claude Code와 가장 가까운 구조를 가지고 있어 직접 비교 학습이 가능하다
+- GitHub Copilot과 가까운 구조를 가지고 있어 직접 비교 학습이 가능하다
 - 핵심 대응 관계:
-  - `CLAUDE.md` ↔ `GEMINI.md`
-  - `.claude/skills/` ↔ `.gemini/skills/` (동일 표준)
-  - Claude hooks (5개) ↔ Gemini hooks (11개)
-  - Claude MCP 설정 ↔ Gemini MCP 설정 (거의 동일)
+  - `copilot-instructions.md` ↔ `GEMINI.md`
+  - `.github/skills/` ↔ `.gemini/skills/` (동일 표준)
+  - Copilot MCP 설정 ↔ Gemini MCP 설정 (거의 동일)
   - 없음 ↔ Extensions 카탈로그 (Gemini만의 강점)
 - 목적은 "같은 개념이 다른 도구에서 어떻게 표현되는지"를 체감하는 것이다
 
 ---
 
-## 부록 D. Google Antigravity로 수행하는 동일 실습
+## 부록 C. Google Antigravity로 수행하는 동일 실습
 
 - Google의 에이전틱 IDE로, VS Code 포크 기반이다
 - 2025년 11월 발표, 2026년 3월 기준 **퍼블릭 프리뷰(무료)**, 최신 버전: v1.20.3
 - Editor View(코드 편집), Manager View(다중 에이전트 관리), Browser Integration(웹 조작) 세 가지 표면을 가진다
 - 멀티 모델 지원: Gemini 3 Pro/Flash, Claude Sonnet 4.5/Opus 4.6, GPT-OSS-120B
 
-### D.1 설치
+### C.1 설치
 
 - [antigravity.google](https://antigravity.google)에서 플랫폼별 설치 파일을 다운로드한다
 - macOS, Windows, Linux 모두 지원
 - VS Code 또는 Cursor에서 설정, 확장, 키바인딩을 가져올 수 있다
 - 확장은 **OpenVSX 레지스트리**를 사용하므로, VS Code Marketplace 전용 확장(Pylance, Remote-SSH 등)은 수동 `.vsix` 설치가 필요하다
 
-### D.2 Instructions — Rules 시스템
+### C.2 Instructions — Rules 시스템
 
 - 3단계 우선순위를 가진 규칙 파일:
 
@@ -1184,64 +833,35 @@ gemini extensions link
 | **Model Decision** | 모델이 자연어 설명을 보고 자동 판단 |
 | **Glob** | 파일 패턴 매칭 (예: `*.ts`, `src/**/*.py`) |
 
-- 규칙 1개당 **12,000자** 제한
-
-### D.3 Skills 실습
+### C.3 Skills 실습
 
 - `.agents/skills/`에 `SKILL.md`를 배치한다
-- 스킬 범위:
-
-| 위치 | 범위 |
-|------|------|
-| `~/.gemini/antigravity/skills/` | 전역 — 모든 프로젝트 |
-| `<workspace>/.agents/skills/` | 워크스페이스 — 해당 프로젝트만 |
-
 - 스킬은 **온디맨드 로드** — Rules와 달리 항상 활성화되지 않고, 에이전트가 관련 작업을 판단할 때만 로드됨
-- Python, Bash, Node.js, Go 스크립트 실행을 지원하여 LLM이 직접 할 수 없는 작업을 수행 가능
 
-### D.4 Workflows
-
-- `/` 명령으로 호출하는 **저장된 프롬프트 템플릿**이다
-- Claude Code의 Skill `/` 호출과 유사한 개념
-- Rules가 수동적 제약이라면, Workflows는 능동적으로 트리거하는 재사용 가능한 작업 흐름이다
-
-### D.5 MCP 서버 연결
+### C.4 MCP 서버 연결
 
 - Antigravity는 MCP를 지원하며, 1,000개 이상의 공식/커뮤니티 MCP 서버를 사용할 수 있다
-- 대표적인 공식 MCP 서버:
-  - **Firebase MCP server** — Firebase 프로젝트 직접 접근 (2026.02 퍼블릭 프리뷰)
-  - **MCP Toolbox for Databases** — AlloyDB, BigQuery, Spanner, Cloud SQL, Looker 연결
 - [antigravity.codes](https://antigravity.codes/)에서 커뮤니티 MCP 서버 1,500개 이상 탐색 가능
 
-### D.6 Multi-Agent (Manager View)
+### C.5 Multi-Agent (Manager View)
 
 - Antigravity만의 고유 기능이다
 - **Manager View**에서 다수의 에이전트를 동시 생성하고, 각각에 서로 다른 작업을 배정한 뒤 병렬 실행할 수 있다
-- 각 에이전트의 진행 상태를 실시간으로 관찰하는 대시보드 역할을 한다
-- Claude Code의 Team 시스템과 유사하지만 GUI 기반이라는 점이 다르다
+- 다수의 에이전트를 GUI에서 동시 관리하는 점이 특징이다
 
-### D.7 Browser Integration
+### C.6 Browser Integration
 
 - Chrome 확장으로 에이전트가 **웹 애플리케이션을 직접 조작**할 수 있다
-- 버튼 클릭, 폼 작성, 페이지 탐색, 스크린샷 캡처 등이 가능하다
-- 프론트엔드 기능 개발 후 검증 단계에 활용할 수 있다
+- Playwright MCP와 유사한 기능이지만 IDE에 내장되어 있다는 점이 다르다
 
-### D.8 주의사항
-
-- 아직 **퍼블릭 프리뷰**이므로 잦은 크래시와 할당량(quota) 문제가 보고되고 있다
-- OpenVSX 레지스트리 제한으로 일부 VS Code 확장이 바로 동작하지 않을 수 있다
-- 무료라는 장점이 있지만 안정성 면에서는 Claude Code, Cursor보다 뒤처진다
-
-### D.9 Antigravity 부록의 의도
+### C.7 Antigravity 부록의 의도
 
 - 핵심 대응 관계:
-  - `CLAUDE.md` / `GEMINI.md` ↔ `GEMINI.md` + `AGENTS.md` + `.agent/rules/`
-  - Claude Skills ↔ Antigravity Skills (온디맨드 로드)
-  - Claude hooks ↔ Antigravity Rules (4가지 활성화 모드)
-  - Claude MCP ↔ Antigravity MCP (동일 프로토콜)
-  - Claude Team ↔ Manager View (GUI 다중 에이전트)
+  - `copilot-instructions.md` ↔ `GEMINI.md` + `AGENTS.md` + `.agent/rules/`
+  - GitHub Copilot Skills ↔ Antigravity Skills (온디맨드 로드)
+  - Copilot MCP ↔ Antigravity MCP (동일 프로토콜)
+  - 없음 ↔ Manager View (GUI 다중 에이전트)
   - 없음 ↔ Browser Integration (Antigravity만의 강점)
-- IDE 기반이므로 GitHub Copilot 경험에서 넘어오기 쉽고, 다중 에이전트와 브라우저 연동이라는 차별점을 체감할 수 있다
 
 ---
 
@@ -1252,66 +872,41 @@ gemini extensions link
 - GitHub Copilot agent mode: https://docs.github.com/en/copilot/how-tos/chat/asking-github-copilot-questions-in-your-ide
 - VS Code MCP 서버 설정: https://code.visualstudio.com/docs/copilot/customization/mcp-servers
 - GitHub MCP and coding agent: https://docs.github.com/en/copilot/concepts/agents/coding-agent/mcp-and-coding-agent
-- GitHub MCP server 설정: https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/set-up-the-github-mcp-server
-- GitHub Copilot CLI plugins overview: https://docs.github.com/copilot/concepts/agents/copilot-cli/about-cli-plugins
-- GitHub Copilot CLI plugin creation: https://docs.github.com/copilot/how-tos/copilot-cli/customize-copilot/plugins-creating
-- GitHub Copilot CLI plugin install: https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/plugins-finding-installing
-- GitHub Copilot CLI command reference: https://docs.github.com/en/copilot/reference/cli-command-reference
+- GitHub Agent Skills: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
+- GitHub custom instructions: https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot
+
+### Playwright MCP
+
+- Playwright MCP GitHub: https://github.com/microsoft/playwright-mcp
+- Playwright MCP 공식 문서: https://playwright.dev/docs/getting-started-mcp
+- @playwright/mcp npm: https://www.npmjs.com/package/@playwright/mcp
+
+### Skills / Agent Skills
+
+- Agent Skills 오픈 표준: https://agentskills.io
 - GitHub Agent Skills: https://docs.github.com/en/copilot/concepts/agents/about-agent-skills
 - GitHub Agent Skills 만들기: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/create-skills
-- GitHub custom instructions: https://docs.github.com/en/copilot/customizing-copilot/adding-custom-instructions-for-github-copilot
-- VS Code custom instructions: https://code.visualstudio.com/docs/copilot/customization/custom-instructions
-
-### Claude Code
-
-- Claude Code overview: https://docs.anthropic.com/en/docs/claude-code/overview
-- Claude Code IDE integration: https://docs.anthropic.com/en/docs/claude-code/ide-integrations
-- Claude Code MCP: https://code.claude.com/docs/en/mcp
-- Claude Code Skills: https://code.claude.com/docs/en/skills
-- Claude Code plugins: https://code.claude.com/docs/en/plugins
-- Claude Code plugin 마켓플레이스: https://code.claude.com/docs/en/discover-plugins
-- Claude Code settings: https://docs.anthropic.com/en/docs/claude-code/settings
-- Claude Code hooks: https://code.claude.com/docs/en/hooks
-- Claude Code memory: https://code.claude.com/docs/en/memory
 
 ### OpenAI / Codex
 
 - OpenAI MCP docs: https://developers.openai.com/api/docs/mcp
-- OpenAI tools docs: https://developers.openai.com/api/docs/guides/tools
 - Apps in ChatGPT: https://help.openai.com/en/articles/11487775-connectors-in-chatgpt
-- ChatGPT Developer Mode / MCP: https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta
-- Introducing the Codex app: https://openai.com/index/introducing-the-codex-app/
-- Codex GA 발표: https://openai.com/index/codex-now-generally-available/
 - Codex Skills: https://developers.openai.com/codex/skills/
 - Codex Rules: https://developers.openai.com/codex/rules/
 - Codex AGENTS.md: https://developers.openai.com/codex/guides/agents-md
-- Codex MCP: https://developers.openai.com/codex/mcp/
-- OpenAI Memory FAQ: https://help.openai.com/en/articles/8590148-memory-faq
 
 ### Gemini CLI
 
 - Gemini CLI GitHub: https://github.com/google-gemini/gemini-cli
 - Gemini CLI MCP 서버 설정: https://geminicli.com/docs/tools/mcp-server/
-- Gemini CLI GEMINI.md: https://geminicli.com/docs/cli/gemini-md/
 - Gemini CLI Skills: https://geminicli.com/docs/cli/skills/
 - Gemini CLI Extensions: https://geminicli.com/docs/extensions/
-- Gemini CLI Extensions 카탈로그: https://geminicli.com/extensions/
-- Gemini CLI Hooks: https://geminicli.com/docs/hooks/
-- Gemini CLI Subagents: https://geminicli.com/docs/core/subagents/
-- Gemini CLI Plan Mode: https://developers.googleblog.com/plan-mode-now-available-in-gemini-cli/
-- Gemini CLI Sandboxing: https://geminicli.com/docs/cli/sandbox/
-- Gemini CLI + FastMCP: https://developers.googleblog.com/gemini-cli-fastmcp-simplifying-mcp-server-development/
-- Google Cloud MCP 지원: https://cloud.google.com/blog/products/ai-machine-learning/announcing-official-mcp-support-for-google-services
 
 ### Google Antigravity
 
 - Antigravity 공식 사이트: https://antigravity.google
 - Antigravity MCP 문서: https://antigravity.google/docs/mcp
 - Antigravity Skills 문서: https://antigravity.google/docs/skills
-- Antigravity Rules & Workflows: https://antigravity.google/docs/rules-workflows
-- Antigravity MCP 커뮤니티: https://antigravity.codes/
-- Antigravity Skills 가이드 (Codelabs): https://codelabs.developers.google.com/getting-started-with-antigravity-skills
-- Antigravity 소개 (Google Developers Blog): https://developers.googleblog.com/build-with-google-antigravity-our-new-agentic-development-platform/
 
 ---
 
