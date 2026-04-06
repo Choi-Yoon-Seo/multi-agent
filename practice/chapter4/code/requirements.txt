@@ -1,4 +1,0 @@
-# Week 4: 첫 MCP 서버 만들기
-mcp>=1.2.0
-requests>=2.31.0
-python-dotenv>=1.0.0
