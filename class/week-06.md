@@ -427,6 +427,3 @@ def route(state: ExplainerState) -> str:
 
 ---
 
-## 다음 주 예고
-
-다음 주에는 지금까지 배운 내용(MCP 서버, 도구 호출 에이전트, LangGraph 워크플로우)을 묶어 작은 미니 프로젝트를 수행한다.
