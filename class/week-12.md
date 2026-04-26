@@ -1,6 +1,6 @@
 # Week 12. 멀티에이전트 + RAG·메모리 통합과 신뢰성
 
-> 학부 운영안 — 강의 + 검색 에이전트 추가 실습
+> 강의 + 수업 RAG 실습 + Homework RAG 변형 과제
 > 참조: LangChain Vector RAG, Self-Consistency (Wang et al.), 에이전트 메모리 4유형
 
 ---
@@ -16,11 +16,11 @@
 
 ---
 
-## 이번 주 운영 원칙
+## 이번 주 핵심 원칙
 
 - “정답이 그럴듯한가”가 아니라 “**근거가 있는가**”를 본다
 - 단일 RAG가 아니라 **멀티에이전트의 한 단계로서의 RAG**를 다룬다
-- 학부 수준에서는 벡터 RAG 한 가지만 다룬다 (그래프 RAG는 심화 읽기)
+- 이번 주에는 벡터 RAG 한 가지에 집중한다 (그래프 RAG는 심화 읽기)
 
 ---
 
@@ -55,7 +55,7 @@ RAG의 기본 아이디어는 단순하다.
 [원본 문서] ─→ [청킹] ─→ [임베딩] ─→ [벡터 저장소]
 ```
 
-- **청킹**: 긴 문서를 작은 조각으로 쪼갠다. 너무 크면 관련 없는 내용이 섞이고, 너무 작으면 문맥이 끊긴다. 학부 실습에서는 *고정 크기 청킹*(예: 500자)부터 시작한다.
+- **청킹**: 긴 문서를 작은 조각으로 쪼갠다. 너무 크면 관련 없는 내용이 섞이고, 너무 작으면 문맥이 끊긴다. 처음에는 *고정 크기 청킹*(예: 500자)부터 시작한다.
 - **임베딩**: 텍스트를 숫자 벡터로 바꾼다. 비슷한 의미는 비슷한 벡터가 된다.
 - **벡터 저장소**: 벡터를 저장하고, 비슷한 것을 빠르게 찾을 수 있게 한다 (FAISS, Chroma, pgvector).
 
@@ -75,14 +75,14 @@ RAG의 기본 아이디어는 단순하다.
 
 RAG는 “**Semantic Memory**”에 해당한다. 전체 그림은 다음과 같다.
 
-| 유형 | 무엇을 기억하는가 | 학부 실습에서의 형태 |
+| 유형 | 무엇을 기억하는가 | 이번 실습에서의 형태 |
 |---|---|---|
 | Working | 지금 진행 중인 대화·계산 | LangGraph의 `state` |
 | Episodic | 과거에 있었던 일 (대화 이력) | Checkpointer의 thread 기록 (10주차) |
 | Semantic | 외부 지식 (사실·문서) | **벡터 저장소 = RAG** (이번 주) |
 | Procedural | 어떻게 하는지 (절차·도구 사용법) | 시스템 프롬프트, Skill 문서 |
 
-학부 실습에서는 *4유형이 있다는 것*만 안다. 12주차의 초점은 Semantic Memory 한 가지다.
+여기서는 4유형의 차이를 구분하고, 12주차에서는 Semantic Memory를 직접 다룬다.
 
 ---
 
@@ -131,9 +131,11 @@ RAG는 “**Semantic Memory**”에 해당한다. 전체 그림은 다음과 같
 
 ## 12.6 실행 환경
 
+9~10주차에서 이어 쓰던 루트 가상환경과 `multi-agent/` 폴더를 그대로 사용한다.
+
 ```bash
 source .venv/bin/activate
-cd practice/chapter12/code
+cd multi-agent
 
 pip install langgraph langchain-groq langchain-community langchain-huggingface \
             sentence-transformers faiss-cpu python-dotenv
@@ -145,7 +147,19 @@ pip install langgraph langchain-groq langchain-community langchain-huggingface \
 
 ---
 
-## 12.7 제작 순서 (5단계)
+## 12.7 수업 실습: RAG 검색 에이전트 추가
+
+수업 예시는 제공된 문서 3개를 인덱싱하고, 검색 에이전트가 가져온 청크만 근거로 답변하게 만드는 것이다. 완성 예시는 아래 파일에 정리한다.
+
+```text
+multi-agent/docs/week12_inclass_rag.md
+```
+
+Homework는 각자 다른 작은 문서 묶음을 선택해 같은 구조로 만든다.
+
+```text
+multi-agent/docs/week12_homework_rag.md
+```
 
 ### Step 1. 문서 다운로드 + 인덱싱
 
@@ -153,7 +167,7 @@ pip install langgraph langchain-groq langchain-community langchain-huggingface \
 
 ```bash
 # 수업 저장소(예시)에서 받기
-cp -r ../../../class_assets/week12/docs ./docs
+cp -r ../class_assets/week12/docs ./docs
 ```
 
 (또는 교수가 GitHub 링크로 배포)
@@ -367,6 +381,8 @@ if __name__ == "__main__":
 
 ### 필수 (90분 안에 끝낼 수 있는 양)
 
+- 수업 실습 파일: `multi-agent/docs/week12_inclass_rag.md`
+- Homework 파일: `multi-agent/docs/week12_homework_rag.md`
 - `index.py`, `rag_supervisor.py` 코드
 - 정상 질문 결과 (출처 표기 포함)
 - 환각 유도 결과 (FAIL → 재작성 흐름)

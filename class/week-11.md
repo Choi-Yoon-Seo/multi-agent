@@ -1,6 +1,6 @@
 # Week 11. 에이전틱 엔지니어링 실습 2: 코딩 에이전트 (도구 중립)
 
-> 학부 운영안 — 강의 + 위임 실습
+> 강의 + 수업 위임 실습 + Homework 위임 과제
 > **도구는 학생이 가진 것 중에서 고른다.** 다음 셋 중 하나를 사용한다.
 > 트랙 A — **GitHub Copilot cloud agent** (이슈 → PR 위임)
 > 트랙 B — **Google Antigravity Agent Manager** (로컬 IDE)
@@ -17,7 +17,7 @@
 
 ---
 
-## 이번 주 운영 원칙
+## 이번 주 핵심 원칙
 
 - 수업의 핵심은 *도구*가 아니라 **검증 가능한 위임 절차**다
 - 도구가 달라도 제출 양식·관찰 표·회고 질문은 같다
@@ -41,7 +41,7 @@
 
 프롬프트 한 줄이 아니라, **에이전트가 읽을 자료·규칙·파일·도구·제약** 전체를 설계하는 일이다.
 
-| 컨텍스트 요소 | 학부 실습에서의 형태 |
+| 컨텍스트 요소 | 이번 실습에서의 형태 |
 |---|---|
 | 목표 | 작업 정의서의 “Goal” |
 | 범위·제외 범위 | 작업 정의서의 “Scope” |
@@ -89,7 +89,7 @@
 
 ## 11.2 공통 6단계 워크플로
 
-도구가 무엇이든 학부 실습에서는 다음 6단계를 따른다.
+도구가 무엇이든 다음 6단계를 따른다.
 
 ```text
 [1] Context 정의 ──── 작업 정의서: Goal / Scope / Validation
@@ -156,6 +156,8 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 학생은 자신이 가진 도구 한 가지를 골라 진행한다. **세 트랙 모두 같은 작업 정의서**를 사용한다.
 
+이번 주 실습도 별도 `practice/chapter11` 폴더를 만들지 않는다. 저장소 루트에서 열고, 실제 수정 대상은 9~13주차 통합 실습 폴더인 `multi-agent/`로 둔다.
+
 ### 트랙 A. GitHub Copilot cloud agent
 
 > 사전 조건: GitHub 계정 + Copilot 코딩 에이전트 활성화 (조직 또는 GitHub Education 계정)
@@ -181,12 +183,12 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 ### 트랙 B. Google Antigravity Agent Manager
 
-> 사전 조건: Antigravity 설치 + Git으로 관리되는 작은 프로젝트
+> 사전 조건: Antigravity 설치 + Git으로 관리되는 작은 프로젝트 (`multi-agent/` 사용)
 > 동기·로컬. 터미널 명령은 *반드시* 사전 승인.
 
 #### 메뉴 흐름
 
-1. Antigravity에서 실습 프로젝트 폴더를 연다
+1. Antigravity에서 저장소 루트를 열고 `multi-agent/`를 실습 대상으로 지정한다
 2. `Cmd+E` / `Ctrl+E`로 **Agent Manager**를 연다
 3. 새 작업을 만들고 **작업 정의서를 그대로 입력**한다 (제약 부분 강조)
 4. **Planning Mode** 또는 계획 생성 단계 표시 → **게이트 1**: 계획·Task Group을 검토
@@ -206,17 +208,17 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 ### 트랙 C. Claude Code
 
-> 사전 조건: Claude Code CLI 또는 IDE 확장 + 작은 저장소
+> 사전 조건: Claude Code CLI 또는 IDE 확장 + 작은 저장소 (`multi-agent/` 사용)
 > 대화형. **Plan mode**가 핵심.
 
 #### 메뉴 흐름
 
-1. 저장소에서 Claude Code를 연다 (CLI 또는 IDE)
+1. 저장소 루트에서 Claude Code를 연다 (CLI 또는 IDE)
 2. 처음 한 번: 저장소 루트에 `CLAUDE.md`를 만들어 코드 규칙·테스트 명령·주의사항을 적는다 (Skill 역할)
 3. **Plan mode**로 진입 (CLI: `/plan` 또는 Shift+Tab의 Plan)
 4. 작업 정의서를 그대로 프롬프트로 입력한다
 5. Claude가 **계획**을 출력 → **게이트 1**: 계획을 읽고, 부족하면 추가 제약을 댓글처럼 추가
-6. Plan을 승인하면 Claude가 코드 수정·테스트 실행 (각 Edit·Bash 호출이 사용자 승인을 거친다 — `acceptEdits` 모드는 *수업에서는 끄고* 진행)
+6. Plan을 승인하면 Claude가 코드 수정·테스트 실행 (각 Edit·Bash 호출이 사용자 승인을 거친다 — `acceptEdits` 모드는 *이번 실습에서는 끄고* 진행)
 7. 변경이 끝나면 `git diff`로 diff 검토, 테스트 결과 확인 → **게이트 2**
 8. 사람이 직접 커밋·push, 필요시 PR 생성
 
@@ -228,7 +230,7 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 #### 주의
 
-- 수업에서는 `bypassPermissions` 절대 금지
+- 이번 실습에서는 `bypassPermissions` 절대 금지
 - `CLAUDE.md`에 “테스트는 반드시 실행 후 결과 보고” 류의 절차를 적어 두면 매번 다시 지시할 필요가 없다 (Skill의 본체)
 
 ---
@@ -292,7 +294,19 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 ### 목표
 
-기존(또는 이번 주 새로 만든) 저장소 하나를 골라, *어떤 도구가 와도* 일하기 쉬운 형태로 정리한다.
+수업 실습에서는 `multi-agent/` 안의 작은 예시 작업을 대상으로, 에이전트에게 안전하게 위임하는 과정을 따라 한다.
+
+수업 실습 파일:
+
+```text
+multi-agent/docs/week11_inclass_delegation.md
+```
+
+Homework에서는 각자 다른 작은 작업을 정해 같은 절차로 위임한다.
+
+```text
+multi-agent/docs/week11_homework_delegation.md
+```
 
 ### 활동 내용 (트랙 무관)
 
@@ -312,6 +326,8 @@ calculator.core.add 함수가 숫자가 아닌 입력을 받으면 명확한 오
 
 ### 필수
 
+- 수업 실습 파일: `multi-agent/docs/week11_inclass_delegation.md`
+- Homework 파일: `multi-agent/docs/week11_homework_delegation.md`
 - 실습 저장소 URL
 - 사용한 도구 트랙 (A/B/C 중 하나) + 선택 이유 1줄
 - 작업 정의서 (Goal/Scope/Validation 채운 본문)

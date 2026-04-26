@@ -1,6 +1,6 @@
 # Week 13. HITL·배포·관측·비용 + 최종 프로젝트 가이드라인
 
-> 학부 운영안 — 1회차 강의(HITL·관측·비용·가이드라인) + 2회차 실습(HITL 통합 + 비용 로그 + 설계서 초안)
+> 강의 + 수업 HITL 실습 + Homework 최종 프로젝트 설계서
 > 참조: LangGraph `interrupt`/`Command`, LangSmith, OpenAI/Groq 비용 로그
 > Docker는 심화·선택 (13.7)
 
@@ -16,7 +16,7 @@
 
 ---
 
-## 이번 주 운영 원칙
+## 이번 주 핵심 원칙
 
 - 2회차 90분 안에 다음 셋이 핵심: **HITL 승인 + 비용 로그 + 설계서 초안**
 - Docker는 *심화/선택*. 시간이 남는 학생만, 또는 14주차 1:1 상담 슬롯에서 보충
@@ -80,7 +80,7 @@ result = graph.invoke(initial_state, config=config)
 graph.invoke(Command(resume="approve"), config=config)
 ```
 
-학부 실습에서는 *터미널 입력*으로 사람 결정을 받는다.
+처음 구현에서는 *터미널 입력*으로 사람 결정을 받는다.
 
 ---
 
@@ -104,20 +104,34 @@ graph.invoke(Command(resume="approve"), config=config)
 
 ## 13.4 실행 환경
 
-12주차 디렉터리를 그대로 쓰거나 복사한다.
+12주차까지 사용한 `multi-agent/` 폴더를 그대로 이어서 쓴다. 주차별 새 폴더를 만들지 않는다.
 
 ```bash
-mkdir -p practice/chapter13/code
-cp practice/chapter12/code/rag_supervisor.py practice/chapter13/code/agent.py
-cp -r practice/chapter12/code/vectorstore practice/chapter13/code/
-cd practice/chapter13/code
+source .venv/bin/activate
+cd multi-agent
+
+cp rag_supervisor.py agent.py
 
 pip install langsmith
 ```
 
 ---
 
-## 13.5 제작 순서 (필수, 90분 안)
+## 13.5 수업 실습: HITL 승인과 비용 로그 추가
+
+수업 예시는 12주차 RAG 멀티에이전트에 승인 노드와 비용 로그를 추가하는 것이다. 완성 예시는 아래 파일에 정리한다.
+
+```text
+multi-agent/docs/week13_inclass_hitl.md
+```
+
+Homework는 최종 프로젝트 설계서 초안을 별도로 작성한다.
+
+```text
+multi-agent/docs/week13_homework_project_plan.md
+```
+
+### Step 1. 승인 노드 추가
 
 ### Step 1. 승인 노드 추가
 
@@ -309,7 +323,7 @@ docker run --rm -it \
 
 ## 13.8 비용 최적화 개념 (개념만)
 
-학부 수업에서는 다음 셋만 안다.
+이번 주에는 다음 셋을 중심으로 본다.
 
 ### (1) 모델 라우팅
 
@@ -326,7 +340,7 @@ def pick_model(question):
 
 긴 시스템 프롬프트나 많은 청크를 매번 다시 보내지 않는다. Anthropic·OpenAI는 캐시 단가를 따로 매긴다 (입력 단가의 10~25%).
 
-학부 실습에서는 “같은 시스템 프롬프트는 한 번만 정의해서 재사용” 정도면 충분하다.
+처음에는 “같은 시스템 프롬프트는 한 번만 정의해서 재사용”하는 것부터 적용한다.
 
 ### (3) 적응형 추론
 
@@ -420,6 +434,8 @@ def pick_model(question):
 
 ### 필수 (90분 안에 끝낼 수 있는 양)
 
+- 수업 실습 파일: `multi-agent/docs/week13_inclass_hitl.md`
+- Homework 파일: `multi-agent/docs/week13_homework_project_plan.md`
 - `agent.py` (HITL 승인 노드 + 비용 로그 추가본)
 - HITL 흐름 캡처 — “approve” 한 번 + “rewrite: ...” 한 번
 - LangSmith 트레이스 캡처 (또는 트레이스 ID)
