@@ -1,0 +1,23 @@
+flowchart TD
+    START([현재 state]) --> Q1{facts<br/>비어있나?}
+    Q1 -->|"YES"| R1["next = collector<br/>사실 추출부터"]
+    Q1 -->|"NO"| Q2{groups에<br/>RECOLLECT_NEEDED?}
+    Q2 -->|"YES"| R2["next = collector<br/>다시 추출"]
+    Q2 -->|"NO"| Q3{groups<br/>비어있나?}
+    Q3 -->|"YES"| R3["next = classifier<br/>유형별 분류"]
+    Q3 -->|"NO"| Q4{guide<br/>비어있나?}
+    Q4 -->|"YES"| R4["next = writer<br/>안내문 작성"]
+    Q4 -->|"NO"| R5["next = FINISH<br/>END로 종료"]
+
+    R1 -.->|"Command(goto='collector')"| OUT([Command 반환])
+    R2 -.->|"Command(goto='collector')"| OUT
+    R3 -.->|"Command(goto='classifier')"| OUT
+    R4 -.->|"Command(goto='writer')"| OUT
+    R5 -.->|"Command(goto=END)"| OUT
+
+    classDef question fill:#fef3c7,stroke:#92400e,color:#111
+    classDef result fill:#bfdbfe,stroke:#1d4ed8,color:#111
+    classDef terminal fill:#e5e7eb,stroke:#374151,color:#111
+    class Q1,Q2,Q3,Q4 question
+    class R1,R2,R3,R4,R5 result
+    class START,OUT terminal

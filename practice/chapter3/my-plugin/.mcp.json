@@ -1,8 +1,0 @@
-{
-  "servers": {
-    "week3-local-minimal": {
-      "command": "python3",
-      "args": ["../code/minimal_mcp_server.py"]
-    }
-  }
-}

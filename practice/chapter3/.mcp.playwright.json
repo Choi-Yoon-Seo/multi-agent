@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "playwright": {
-      "transport": "stdio",
-      "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest", "--headless"]
-    }
-  }
-}

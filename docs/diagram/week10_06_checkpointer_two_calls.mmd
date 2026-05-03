@@ -1,0 +1,23 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant G as graph (compiled)
+    participant CP as InMemorySaver<br/>(thread_id="demo-1")
+    participant LLM as LLM workers
+
+    Note over U,CP: === 1차 호출 — 4개 공지 입력 ===
+    U->>G: invoke(notices=4건, config={thread_id: "demo-1"})
+    G->>CP: 이전 상태 조회 (없음, 초기 state)
+    G->>LLM: supervisor → collector → classifier → writer
+    LLM-->>G: facts / groups / guide 채워짐
+    G->>CP: 매 노드 종료 시 스냅샷 저장
+    G-->>U: state1 (학생 유형별 안내문)
+
+    Note over U,CP: === 2차 호출 (이어서) — "교환학생만 더 자세히" ===
+    U->>G: invoke(추가 요청, config={thread_id: "demo-1"})
+    G->>CP: 같은 thread_id로 이전 상태 복원
+    CP-->>G: facts / groups 살아있는 state
+    G->>LLM: supervisor가 보고 → writer로 직행 (재추출 없음)
+    LLM-->>G: guide (1차 컨텍스트 활용)
+    G->>CP: 누적 스냅샷 저장
+    G-->>U: state2 (이전 facts/groups + 새 guide)

@@ -1,0 +1,20 @@
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant S as Supervisor (LLM)
+    participant C as collector
+    participant K as classifier
+    participant W as writer
+
+    U->>S: notices (공지 묶음)
+    S->>C: facts 비어있음 → collector
+    C-->>S: facts (마감일 일부 누락)
+    S->>K: groups 비어있음 → classifier
+    K-->>S: "RECOLLECT_NEEDED ..."
+    S->>C: classifier 신호 보고 다시 collector (재추출)
+    C-->>S: facts (보강됨)
+    S->>K: classifier
+    K-->>S: groups (정상)
+    S->>W: writer
+    W-->>S: guide
+    S->>U: FINISH → END

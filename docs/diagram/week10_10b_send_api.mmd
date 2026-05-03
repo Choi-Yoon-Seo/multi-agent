@@ -1,0 +1,26 @@
+flowchart LR
+    Q[notices_list:<br/>공지 4건 분리] --> D["distribute<br/>Send API로 fan-out"]
+
+    D ==>|"Send"| P1["single_collect<br/>공지 1: 수강신청"]
+    D ==>|"Send"| P2["single_collect<br/>공지 2: 교환학생"]
+    D ==>|"Send"| P3["single_collect<br/>공지 3: 학위논문"]
+    D ==>|"Send"| P4["single_collect<br/>공지 4: 복수전공"]
+
+    P1 -->|parts에 추가| M["merge<br/>parts → facts"]
+    P2 -->|parts에 추가| M
+    P3 -->|parts에 추가| M
+    P4 -->|parts에 추가| M
+
+    M --> R[facts<br/>4건 통합 추출 결과]
+
+    Note["⚡ 4개 LLM 호출이 동시에 실행됨<br/>(Annotated[list, add] 리듀서가 결과 합침)"]
+    P2 -.- Note
+
+    classDef worker fill:#bfdbfe,stroke:#1d4ed8,color:#111
+    classDef merge fill:#fde68a,stroke:#b45309,color:#111
+    classDef io fill:#dcfce7,stroke:#166534,color:#111
+    classDef note fill:#fef3c7,stroke:#92400e,color:#111,font-size:12px
+    class P1,P2,P3,P4 worker
+    class D,M merge
+    class Q,R io
+    class Note note

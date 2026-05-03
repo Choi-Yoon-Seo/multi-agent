@@ -1,0 +1,32 @@
+flowchart TB
+    subgraph MAIN["메인 그래프 (supervisor.py)"]
+        direction TB
+        SUP[supervisor]
+        R[collector]
+        A["classifier<br/>(여기가 Subgraph)"]
+        W[writer]
+        SUP --> R
+        SUP --> A
+        SUP --> W
+        R --> SUP
+        A --> SUP
+        W --> SUP
+    end
+
+    subgraph SUB["classifier Subgraph (내부 그래프)"]
+        direction LR
+        SS([START]) --> DA["draft_grouping<br/>facts → groups 작성"]
+        DA --> SC["self_check<br/>공지 0건인 유형 있으면<br/>'(자체검증: 매칭 누락 의심)' 추가"]
+        SC --> SE([END])
+    end
+
+    A === SUB
+
+    classDef sup fill:#fde68a,stroke:#b45309,color:#111
+    classDef worker fill:#bfdbfe,stroke:#1d4ed8,color:#111
+    classDef subnode fill:#ddd6fe,stroke:#5b21b6,color:#111
+    classDef terminal fill:#e5e7eb,stroke:#374151,color:#111
+    class SUP sup
+    class R,A,W worker
+    class DA,SC subnode
+    class SS,SE terminal

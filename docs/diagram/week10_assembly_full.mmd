@@ -1,0 +1,24 @@
+flowchart TD
+    START([START]) --> SUP
+
+    SUP["supervisor<br/>(LLM + Route)<br/>다음에 누가 일할지 결정"]
+    R["collector<br/>공지에서 사실 추출<br/>(대상·마감일·준비물·링크)"]
+    A["classifier<br/>학생 유형별 분류<br/>(1학년·4학년·복수전공·교환학생…)"]
+    W["writer<br/>유형별 안내문 작성"]
+    EN([END])
+
+    SUP -- "Command(goto='collector')" --> R
+    SUP -- "Command(goto='classifier')" --> A
+    SUP -- "Command(goto='writer')" --> W
+    SUP -- "Command(goto=END)" --> EN
+
+    R -- "add_edge" --> SUP
+    A -- "add_edge" --> SUP
+    W -- "add_edge" --> SUP
+
+    classDef sup fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111
+    classDef worker fill:#bfdbfe,stroke:#1d4ed8,color:#111
+    classDef terminal fill:#e5e7eb,stroke:#374151,color:#111
+    class SUP sup
+    class R,A,W worker
+    class START,EN terminal

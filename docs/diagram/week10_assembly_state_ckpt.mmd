@@ -1,0 +1,23 @@
+flowchart LR
+    subgraph Graph["compiled graph"]
+        direction TB
+        SUP2[supervisor]
+        R2[collector]
+        A2[classifier]
+        W2[writer]
+        SUP2 <--> R2
+        SUP2 <--> A2
+        SUP2 <--> W2
+    end
+
+    State["TeamState (TypedDict)<br/>messages · notices · facts<br/>groups · guide · next"]
+    CP[("InMemorySaver<br/>thread_id별 상태 저장")]
+
+    State -. "모든 노드가 읽고 씀" .-> Graph
+    Graph -. "매 노드 종료 시 스냅샷" .-> CP
+    CP -. "같은 thread_id로<br/>두 번째 호출 시 복원" .-> Graph
+
+    classDef state fill:#dcfce7,stroke:#166534,color:#111
+    classDef ckpt fill:#fce7f3,stroke:#9d174d,color:#111
+    class State state
+    class CP ckpt

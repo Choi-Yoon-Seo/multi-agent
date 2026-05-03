@@ -1,7 +1,0 @@
-{
-  "name": "week3-practice-tools",
-  "description": "Week 3 practice plugin bundle (skills + mcp config)",
-  "version": "1.0.0",
-  "skills": ["skills/"],
-  "mcpServers": ".mcp.json"
-}

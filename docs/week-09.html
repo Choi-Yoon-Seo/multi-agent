@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang xml:lang>
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>week-09</title>
+  <style>
+
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+font-size: inherit;
+width: 0.8em;
+margin: 0 0.8em 0.2em -1.6em;
+vertical-align: middle;
+}
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+  <style type="text/css">body { max-width: 900px; margin: 2em auto; padding: 0 1em; font-family: -apple-system, "Helvetica Neue", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif; line-height: 1.6; color: #222; }
+h1, h2, h3, h4 { color: #111; margin-top: 1.6em; }
+h1 { border-bottom: 2px solid #333; padding-bottom: 0.3em; }
+h2 { border-bottom: 1px solid #ccc; padding-bottom: 0.2em; }
+code { background: #f3f4f6; padding: 0.1em 0.3em; border-radius: 3px; font-size: 0.95em; }
+pre { background: #f3f4f6; padding: 0.8em 1em; border-radius: 6px; overflow-x: auto; }
+pre code { background: none; padding: 0; font-size: 0.88em; }
+img { max-width: 100%; display: block; margin: 1em auto; }
+table { border-collapse: collapse; margin: 1em 0; }
+th, td { border: 1px solid #ddd; padding: 0.5em 0.8em; }
+th { background: #f8f9fa; }
+blockquote { border-left: 4px solid #93c5fd; padding: 0.4em 1em; background: #eff6ff; color: #1e3a8a; margin: 1em 0; }
+@media print {
+  body { max-width: 100%; }
+  h2 { page-break-before: auto; }
+  pre, img, table { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">week-09</h1>
+</header>
+<h1 id="week-9.-멀티에이전트-개념-설계-판단-4대-패턴-평가">Week 9.
+멀티에이전트 개념: 설계 판단, 4대 패턴, 평가</h1>
+<blockquote>
+<p>강의 + 수업 설계 실습 + Homework 설계 과제 참조: Notion ch6 「멀티
+에이전트 시스템」, Anthropic 「How we built our multi-agent research
+system」(2025), Cognition 「Don’t build multi-agents」(2025)</p>
+</blockquote>
+<hr />
+<h2 id="학습-목표">학습 목표</h2>
+<ul>
+<li>단일 에이전트의 한계를 작업 구조 관점에서 설명한다</li>
+<li>멀티에이전트의 4대 패턴(계층형·협력형·순차형·시장형)을 구분한다</li>
+<li>핸드오프와 공유 메모리의 역할을 설명한다</li>
+<li>멀티에이전트가 “필요한 작업”과 “쓰지 말아야 할 작업”을 자신의 사례로
+판단한다</li>
+<li>자기 도메인의 작업을 멀티에이전트 설계안으로 구체화한다</li>
+</ul>
+<hr />
+<h2 id="이번-주-핵심-원칙">이번 주 핵심 원칙</h2>
+<ul>
+<li>프레임워크 비교에 시간을 쓰지 않는다 — LangGraph 한 가지로만
+실습한다</li>
+<li>“멀티에이전트가 멋있어서” 쓰는 것이 아니라 “단일 에이전트로는 풀리지
+않아서” 쓰는 감각을 만든다</li>
+<li>이번 주에는 구현보다 설계 판단에 집중한다</li>
+</ul>
+<hr />
+<h2 id="왜-멀티에이전트인가">9.1 왜 멀티에이전트인가</h2>
+<p>하나의 에이전트가 모든 일을 맡으면 다음 문제가 생긴다.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>문제</th>
+<th>어떻게 드러나는가</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>컨텍스트 비대</td>
+<td>한 대화에 계획·구현·테스트·문서가 모두 섞인다. 모델이 중요한 제약을
+놓친다</td>
+</tr>
+<tr>
+<td>역할 혼재</td>
+<td>검토자처럼 굴어야 할 순간에 작성자처럼 답한다</td>
+</tr>
+<tr>
+<td>검증 약화</td>
+<td>자기 산출물을 자기가 검토하므로 같은 실수를 반복한다</td>
+</tr>
+<tr>
+<td>추적 불가</td>
+<td>어디서 잘못됐는지 대화 흐름에서만 확인할 수 있다</td>
+</tr>
+</tbody>
+</table>
+<p><strong>멀티에이전트의 기본 아이디어</strong>: 일을 책임 단위로
+쪼개고, 각 에이전트가 자기 책임만 맡게 한다.</p>
+<pre class="text"><code>[사용자 질문]
+     │
+     ▼
+[연구자]  ── 정보 모은다
+     │
+     ▼
+[작성자]  ── 답변을 만든다
+     │
+     ▼
+[검토자]  ── 사실·논리·범위를 점검한다
+     │
+     ▼
+[최종 답변]</code></pre>
+<p>다만 역할을 나누면 <strong>조정 비용</strong>이 든다. 작은 함수 하나
+고치는 일에는 멀티에이전트가 오히려 느리고 번거롭다.</p>
+<hr />
+<h2 id="멀티에이전트-좋은가-나쁜가-2025년-두-입장">9.2 멀티에이전트,
+좋은가 나쁜가 (2025년 두 입장)</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>입장</th>
+<th>누가</th>
+<th>핵심 한 줄</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>찬성</td>
+<td>Anthropic</td>
+<td>일을 <em>나눠서</em> 시키니 단일 에이전트보다 훨씬 잘하더라</td>
+</tr>
+<tr>
+<td>신중</td>
+<td>Cognition (Devin)</td>
+<td><em>섣불리</em> 나누면 에이전트끼리 가정이 안 맞아 더 헤맨다</td>
+</tr>
+</tbody>
+</table>
+<p><strong>멀티에이전트는 대립이 아니라 조건의 차이</strong>다.</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>잘 맞는 작업</th>
+<th>잘 안 맞는 작업</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>일을 여러 부분으로 나눌 수 있다</td>
+<td>하나의 흐름으로 판단해야 한다</td>
+</tr>
+<tr>
+<td>각 부분의 입력과 결과가 분명하다</td>
+<td>단계 사이의 가정이 말로 드러나 있지 않다</td>
+</tr>
+<tr>
+<td>동시에 진행하면 시간이 줄어든다</td>
+<td>순서대로 진행하고 검증만 더하면 충분하다</td>
+</tr>
+</tbody>
+</table>
+<p>판단 기준은 간단하다.<br />
+<strong>이 작업을 서로 독립된 입출력을 가진 작은 작업 2개 이상으로 나눌
+수 있는가?</strong></p>
+<hr />
+<h2 id="단일-에이전트와-멀티에이전트-비교">9.3 단일 에이전트와
+멀티에이전트 비교</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>항목</th>
+<th>단일 에이전트</th>
+<th>멀티에이전트</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>구조</td>
+<td>단순</td>
+<td>복잡</td>
+</tr>
+<tr>
+<td>구현 비용</td>
+<td>낮음</td>
+<td>높음</td>
+</tr>
+<tr>
+<td>역할 분리</td>
+<td>약함</td>
+<td>강함</td>
+</tr>
+<tr>
+<td>검증 루프</td>
+<td>사용자가 챙겨야 함</td>
+<td>검토 역할을 별도로 둘 수 있음</td>
+</tr>
+<tr>
+<td>추적 가능성</td>
+<td>대화 흐름에 의존</td>
+<td>핸드오프·로그·트레이스로 남음</td>
+</tr>
+<tr>
+<td>적합한 작업</td>
+<td>작은 수정, 단순 자동화</td>
+<td>조사 + 작성 + 검토, 데이터 + 분석 + 보고</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="대-패턴">9.4 4대 패턴</h2>
+<p>멀티에이전트 패턴은 우선 다음 네 가지로 정리한다. 실제 프로젝트의
+90%는 이 안에서 해결된다.</p>
+<h3 id="패턴-1.-순차형-sequential">패턴 1. 순차형 (Sequential)</h3>
+<p>가장 단순하다. 한 에이전트의 출력이 다음 에이전트의 입력이 된다.</p>
+<pre class="text"><code>[연구자] ─→ [작성자] ─→ [검토자]</code></pre>
+<ul>
+<li>장점: 흐름이 명확하다, 디버깅이 쉽다</li>
+<li>단점: 병렬 처리가 안 된다</li>
+<li>처음 설계할 때 가장 안전한 출발점</li>
+</ul>
+<p>실제 사례:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>사례</th>
+<th>흐름</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>논문 요약</td>
+<td>논문 읽기 → 핵심 주장 정리 → 한계 검토 → 요약문 작성</td>
+</tr>
+<tr>
+<td>학과 공지 정리</td>
+<td>공지에서 사실 추출 → 학생 유형별 분류 → 안내문 작성 → 검토</td>
+</tr>
+<tr>
+<td>코드 리뷰 보조</td>
+<td>변경 파일 파악 → 위험 지점 분석 → 리뷰 코멘트 작성</td>
+</tr>
+</tbody>
+</table>
+<p>잘 맞는 조건: - 순서가 자연스럽게 정해져 있다 - 앞 단계 결과가 다음
+단계의 입력으로 바로 쓰인다 - 중간 결과를 확인하기 쉽다</p>
+<p>잘 안 맞는 조건: - 여러 자료를 동시에 조사해야 한다 - 다음 역할을
+상황에 따라 바꿔야 한다 - 실패했을 때 앞 단계로 되돌아가는 흐름이
+많다</p>
+<h3 id="패턴-2.-계층형-hierarchical-supervisor-orchestrator">패턴 2.
+계층형 (Hierarchical / Supervisor / Orchestrator)</h3>
+<p>관리자(Supervisor) 에이전트가 작업 전체를 보고, 하위 에이전트에게
+작업을 나눠 준다.</p>
+<blockquote>
+<p><strong>용어 안내</strong>: 이 패턴의 <em>관리자 역할</em>은 문헌마다
+이름이 다르다. - <strong>Supervisor</strong> — LangGraph 공식 용어
+(<code>langgraph-supervisor</code> 패키지, “Agent Supervisor” 튜토리얼)
+- <strong>Orchestrator</strong> — Anthropic 「How we built our
+multi-agent research system」(2025)의 <em>orchestrator-worker
+pattern</em>, Microsoft Magentic-One - <strong>Manager / Lead
+Agent</strong> — CrewAI hierarchical process, AutoGen</p>
+<p><em>같은 개념, 다른 이름</em>이다. 본 강의는 LangGraph 코드와
+매칭되는 <strong>Supervisor</strong>를 기본 표기로 쓰되, 개념 설명에서는
+두 용어를 병기한다.</p>
+</blockquote>
+<pre class="text"><code>   [Supervisor / Orchestrator]
+         /     |     \
+   [연구자] [작성자] [검토자]</code></pre>
+<ul>
+<li>장점: 작업 분배가 동적이다, 실패 시 다시 다른 에이전트로 돌릴 수
+있다</li>
+<li>단점: Supervisor 설계가 잘못되면 무한 루프</li>
+<li>LangGraph의 표준 패턴 (10주차 실습)</li>
+</ul>
+<p>실제 사례:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>사례</th>
+<th>Supervisor의 결정</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>복잡한 질의응답</td>
+<td>자료가 부족하면 연구자에게, 충분하면 작성자에게 보냄</td>
+</tr>
+<tr>
+<td>고객 문의 처리</td>
+<td>환불 문의는 정책 확인 에이전트, 기술 오류는 진단 에이전트로
+보냄</td>
+</tr>
+<tr>
+<td>코딩 에이전트</td>
+<td>계획이 필요하면 계획자, 코드 수정은 구현자, 실패 테스트는 디버거에게
+보냄</td>
+</tr>
+</tbody>
+</table>
+<p>잘 맞는 조건: - 작업의 다음 단계가 처음부터 고정되어 있지 않다 - 중간
+결과에 따라 다시 조사하거나 다시 작성해야 한다 - 실패했을 때 다른 역할로
+되돌릴 필요가 있다</p>
+<p>잘 안 맞는 조건: - 항상 같은 순서로 처리하면 충분하다 - Supervisor가
+판단할 정보가 state에 제대로 남지 않는다 - 종료 조건이 불분명하다</p>
+<h3 id="패턴-3.-협력형-cooperative-parallel">패턴 3. 협력형 (Cooperative
+/ Parallel)</h3>
+<p>여러 에이전트가 같은 목표를 향해 병렬로 일한다.</p>
+<pre class="text"><code>[연구자A] ┐
+[연구자B] ├─→ [통합자]
+[연구자C] ┘</code></pre>
+<ul>
+<li>장점: 빠르다, Anthropic 사례에서 강한 패턴</li>
+<li>단점: 결과 충돌·중복 처리 필요</li>
+</ul>
+<p>실제 사례:</p>
+<table>
+<thead>
+<tr>
+<th>사례</th>
+<th>병렬 작업</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>시장 조사</td>
+<td>가격 조사, 경쟁사 조사, 사용자 리뷰 조사를 동시에 진행</td>
+</tr>
+<tr>
+<td>문헌 조사</td>
+<td>논문 A, 논문 B, 논문 C를 각각 다른 에이전트가 읽음</td>
+</tr>
+<tr>
+<td>여행 계획</td>
+<td>항공권, 숙소, 일정, 예산을 동시에 조사</td>
+</tr>
+</tbody>
+</table>
+<p>잘 맞는 조건: - 하위 작업들이 서로 독립적이다 - 각 작업의 입력과
+출력이 분명하다 - 병렬로 처리하면 시간이 실제로 줄어든다</p>
+<p>잘 안 맞는 조건: - 한 단계의 결정이 다음 단계의 전제가 된다 - 여러
+에이전트가 같은 자료를 반복해서 읽는다 - 통합자가 충돌하는 결과를 정리할
+기준이 없다</p>
+<h3 id="패턴-4.-시장형-market-auction">패턴 4. 시장형 (Market /
+Auction)</h3>
+<p>여러 에이전트가 입찰처럼 작업을 가져간다. 이 패턴은 구현보다 개념
+이해에 초점을 둔다.</p>
+<ul>
+<li>사용 예: 도구가 많고, 어떤 도구가 잘할지 미리 모를 때</li>
+<li>단점: 구현 복잡도가 매우 높음</li>
+</ul>
+<p>기본 아이디어:</p>
+<pre class="text"><code>[작업 공고]
+   ↓
+[에이전트 A: 내가 잘할 수 있음]
+[에이전트 B: 비용은 낮지만 느림]
+[에이전트 C: 정확도는 높지만 비쌈]
+   ↓
+[선택자]
+   ↓
+[선택된 에이전트 실행]</code></pre>
+<p>실제 사례:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>사례</th>
+<th>입찰 기준</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>도구 선택 에이전트</td>
+<td>검색, 계산기, DB, 브라우저 중 어떤 도구가 적합한가</td>
+</tr>
+<tr>
+<td>번역/요약 파이프라인</td>
+<td>빠른 모델, 정확한 모델, 긴 문서 모델 중 무엇을 쓸 것인가</td>
+</tr>
+<tr>
+<td>업무 자동화</td>
+<td>이메일 에이전트, 캘린더 에이전트, 문서 에이전트 중 누가 맡을
+것인가</td>
+</tr>
+</tbody>
+</table>
+<p>잘 맞는 조건: - 사용할 수 있는 도구나 에이전트가 많다 - 어떤
+에이전트가 잘할지 미리 고정하기 어렵다 - 비용, 속도, 정확도 중 무엇을
+우선할지 비교해야 한다</p>
+<p>잘 안 맞는 조건: - 에이전트의 능력을 평가할 기준이 없다 - 입찰과 선택
+과정이 실제 작업보다 더 오래 걸린다 - 작은 과제에 과한 구조가 된다</p>
+<h3 id="패턴-비교-요약">패턴 비교 요약</h3>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>패턴</th>
+<th>핵심 질문</th>
+<th>대표 사례</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>순차형</td>
+<td>이 작업은 자연스러운 순서가 있는가</td>
+<td>조사 → 작성 → 검토</td>
+</tr>
+<tr>
+<td>계층형</td>
+<td>다음 역할을 상황에 따라 골라야 하는가</td>
+<td>Supervisor / Orchestrator 라우팅</td>
+</tr>
+<tr>
+<td>협력형</td>
+<td>독립 하위 작업을 동시에 처리할 수 있는가</td>
+<td>여러 문서 병렬 조사</td>
+</tr>
+<tr>
+<td>시장형</td>
+<td>여러 에이전트 중 누가 맡을지 선택해야 하는가</td>
+<td>도구·모델 선택</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="핸드오프와-공유-메모리">9.5 핸드오프와 공유 메모리</h2>
+<h3 id="핸드오프handoff">핸드오프(Handoff)</h3>
+<p>한 에이전트가 “이건 내 일이 아니다, 다음 에이전트가 처리해라”라고
+넘기는 행위다.</p>
+<p>LangGraph에서는 <code>Command</code> 객체로 표현한다.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> langgraph.types <span class="im">import</span> Command</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> researcher(state):</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... 조사 작업</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> Command(</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>        goto<span class="op">=</span><span class="st">&quot;writer&quot;</span>,                   <span class="co"># 다음 에이전트로 넘김</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>        update<span class="op">=</span>{<span class="st">&quot;research_notes&quot;</span>: notes} <span class="co"># 상태에 결과 추가</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    )</span></code></pre></div>
+<p>핵심은 <strong>다음 에이전트가 받을 수 있는 형태로 결과를
+정리</strong>해 두는 것이다.</p>
+<h3 id="공유-메모리">공유 메모리</h3>
+<p>에이전트들이 같이 보는 상태(State)다. LangGraph에서는
+<code>TypedDict</code>로 정의한다.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> typing <span class="im">import</span> TypedDict</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TeamState(TypedDict):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    question: <span class="bu">str</span>         <span class="co"># 사용자 질문</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    research_notes: <span class="bu">str</span>   <span class="co"># 연구자 산출물</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    draft: <span class="bu">str</span>            <span class="co"># 작성자 산출물</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    review: <span class="bu">str</span>           <span class="co"># 검토자 산출물</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    final: <span class="bu">str</span>            <span class="co"># 최종 답변</span></span></code></pre></div>
+<p>자주 하는 실수는 <strong>모든 에이전트가 모든 필드를 다
+본다</strong>고 생각하는 것이다. 실제로는 <em>각 에이전트가 자신에게
+필요한 필드만 읽어야</em> 컨텍스트가 깨끗해진다.</p>
+<hr />
+<h2 id="멀티에이전트-평가-무엇을-보는가">9.6 멀티에이전트 평가: 무엇을
+보는가</h2>
+<p>세 벤치마크는 <em>이름만</em> 알아 둔다.</p>
+<table>
+<thead>
+<tr>
+<th>벤치마크</th>
+<th>한 줄</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GAIA</strong></td>
+<td>도구를 조합해야 풀리는 일반 질문</td>
+</tr>
+<tr>
+<td><strong>AgentBench</strong></td>
+<td>웹·DB·OS 등 8개 환경에서 다단계 추론</td>
+</tr>
+<tr>
+<td><strong>WebArena</strong></td>
+<td>실제 웹 사이트에서 작업 완료율</td>
+</tr>
+</tbody>
+</table>
+<p>평가는 먼저 다음 4가지 기준으로 시작한다.</p>
+<ol type="1">
+<li>작업 완료율 — 의도한 산출물이 나왔는가</li>
+<li>근거 — 왜 그렇게 답했는지 설명할 수 있는가</li>
+<li>실패 인지 — 모르는 것을 “모른다”고 답하는가</li>
+<li>사람 개입 횟수 — 끝까지 가기 위해 몇 번 손댔는가</li>
+</ol>
+<hr />
+<h2 id="언제-멀티에이전트를-쓰지-말아야-하는가">9.7 언제 멀티에이전트를
+쓰지 말아야 하는가</h2>
+<p><strong>이번 주에서 가장 중요한 부분</strong>이다. 다음에 해당하면
+단일 에이전트가 낫다.</p>
+<ul>
+<li>작업이 5분 안에 끝나는 작은 수정이다</li>
+<li>변경 파일이 1개이고 테스트도 단순하다</li>
+<li>역할을 나누어도 입출력이 분명해지지 않는다</li>
+<li>한 에이전트의 답을 다른 에이전트가 그대로 옮겨 쓰게 된다 (역할이
+같다는 신호)</li>
+<li>도구 권한을 통제하기 어렵다</li>
+</ul>
+<p>“멀티에이전트로 만들었다”는 자체가 가치가 아니다. <strong>단일
+에이전트로 안 풀리는 이유</strong>를 한 문장으로 말할 수 없다면, 단일
+에이전트로 시작한다.</p>
+<hr />
+<h2 id="수업-실습-예시-과제를-함께-설계하기">9.8 수업 실습: 예시 과제를
+함께 설계하기</h2>
+<h3 id="실습-시나리오">실습 시나리오</h3>
+<p>이번 주에는 코드를 먼저 만들지 않는다. 하나의 예시 과제를 정해 설계
+과정을 먼저 살펴보고, 같은 흐름을 따라 직접 작성한다.</p>
+<p>목표는 “에이전트를 여러 개 쓰는 것”이 아니라, <strong>작업을
+역할·입력·출력·검증 기준으로 나눌 수 있는지</strong>를 판단하는
+것이다.</p>
+<p>수업 예시 과제:</p>
+<blockquote>
+<p>학과 공지 여러 개를 읽고, 학생 유형별로 해야 할 일을 정리한다.</p>
+</blockquote>
+<h3 id="작업-위치">작업 위치</h3>
+<p>9~13주차 실습과 과제는 주차별 <code>practice/chapter*/code</code>
+폴더를 따로 만들지 않고, 저장소 루트의 <code>multi-agent/</code>
+하나에서 이어서 진행한다. Python 가상환경도 저장소 루트에 한 번만
+만든다.</p>
+<p><strong>macOS / Linux</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 프로젝트 루트에서</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python3</span> <span class="at">-m</span> venv .venv</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> multi-agent/code multi-agent/docs multi-agent/data/input multi-agent/data/output</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> multi-agent</span></code></pre></div>
+<p><strong>Windows (PowerShell)</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 프로젝트 루트에서</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>python <span class="op">-</span>m venv <span class="op">.</span><span class="fu">venv</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="op">.</span><span class="fu">venv</span>\Scripts\Activate<span class="op">.</span><span class="fu">ps1</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="fu">New-Item</span> <span class="op">-</span>ItemType Directory <span class="op">-</span>Force <span class="op">-</span>Path multi-agent\code<span class="op">,</span> multi-agent\docs<span class="op">,</span> multi-agent\<span class="kw">data</span>\input<span class="op">,</span> multi-agent\<span class="kw">data</span>\output <span class="op">|</span> <span class="fu">Out-Null</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cd</span> multi-agent</span></code></pre></div>
+<p><strong>Windows (cmd)</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode bat"><code class="sourceCode dosbat"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">REM 프로젝트 루트에서</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>python <span class="at">-m</span> venv .venv</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>.venv\Scripts\activate.bat</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="bu">mkdir</span> multi-agent\code multi-agent\docs multi-agent\data\input multi-agent\data\output</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> multi<span class="at">-agent</span></span></code></pre></div>
+<p>작성 파일:</p>
+<pre class="text"><code>multi-agent/docs/week09_inclass_design.md</code></pre>
+<h3 id="step-1.-예시-과제-이해하기">Step 1. 예시 과제 이해하기</h3>
+<p>예시는 아래 조건으로 시작한다.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>도메인: 학과 공지 정리</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>작업: 여러 공지에서 학생 유형별 행동 목록 만들기</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>이 작업이 반복되는 상황: 수강 신청, 장학금, 졸업 요건, 교환학생 신청 공지가 동시에 올라올 때</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>최종 사용자가 원하는 결과: 1학년, 4학년, 복수전공생, 교환학생 준비생별로 해야 할 일과 마감일을 바로 확인한다</span></code></pre></div>
+<p>이 작업은 단순 요약이 아니다. 공지마다 대상, 마감일, 준비물, 예외
+조건이 다르고, 학생 유형별로 필요한 정보가 달라진다.</p>
+<h3 id="step-2.-단일-에이전트로-부족한-이유-쓰기">Step 2. 단일
+에이전트로 부족한 이유 쓰기</h3>
+<p>다음 질문에 답한다.</p>
+<ol type="1">
+<li>한 에이전트가 모두 처리하면 어떤 정보가 섞이는가</li>
+<li>어떤 검증이 약해지는가</li>
+<li>어떤 판단을 사람이 중간에 확인해야 하는가</li>
+</ol>
+<p>단일 에이전트로도 충분하다면, 억지로 멀티에이전트로 만들지 않는다. 이
+경우에는 “멀티에이전트를 쓰지 않는 설계”를 결론으로 써도 된다.</p>
+<p>예시 답안:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>공지의 사실 추출, 학생 유형 분류, 최종 안내문 작성이 한 응답에 섞인다.</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>마감일이나 대상 학년을 잘못 읽어도 스스로 검증하지 못할 수 있다.</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>학생에게 안내하기 전, 중요한 마감일과 신청 조건은 사람이 확인해야 한다.</span></code></pre></div>
+<h3 id="step-3.-역할-나누기">Step 3. 역할 나누기</h3>
+<p>역할은 최소 2개, 최대 4개로 제한한다. 각 역할은 이름이 아니라
+<strong>책임</strong>으로 구분한다.</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>역할</th>
+<th>입력</th>
+<th>작업</th>
+<th>출력</th>
+<th>검증 기준</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>공지 수집자</td>
+<td>공지 원문</td>
+<td>대상, 마감일, 준비물, 링크 추출</td>
+<td>공지별 사실 목록</td>
+<td>각 항목에 출처가 있는가</td>
+</tr>
+<tr>
+<td>대상 분류자</td>
+<td>공지별 사실 목록</td>
+<td>학생 유형별 관련 공지 분류</td>
+<td>유형별 후보 목록</td>
+<td>대상 조건이 맞는가</td>
+</tr>
+<tr>
+<td>안내 작성자</td>
+<td>유형별 후보 목록</td>
+<td>학생이 바로 볼 안내문 작성</td>
+<td>유형별 할 일 목록</td>
+<td>행동, 마감일, 링크가 포함됐는가</td>
+</tr>
+<tr>
+<td>검토자</td>
+<td>최종 안내문 + 사실 목록</td>
+<td>빠진 조건과 위험 문장 확인</td>
+<td>수정 요청 또는 승인</td>
+<td>원문에 없는 내용이 없는가</td>
+</tr>
+</tbody>
+</table>
+<p>역할을 나눴는데 출력이 거의 같다면 잘못 나눈 것이다.</p>
+<h3 id="step-4.-흐름과-상태-설계하기">Step 4. 흐름과 상태 설계하기</h3>
+<p>아래 두 가지를 그리거나 표로 쓴다.</p>
+<pre class="text"><code>[사용자 입력: 공지 여러 개]
+   ↓
+[공지 수집자]
+   ↓
+[대상 분류자]
+   ↓
+[안내 작성자]
+   ↓
+[검토자]
+   ↓
+[사람 승인]
+   ↓
+[최종 출력: 학생 유형별 할 일 목록]</code></pre>
+<p>공유 상태도 함께 적는다.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 공유 상태 초안</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>user_request: 사용자가 원하는 정리 방식</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>notice_sources: 공지 원문과 링크</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>extracted_facts: 공지별 대상, 마감일, 준비물, 링크</span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>student_groups: 1학년, 4학년, 복수전공생, 교환학생 준비생</span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>grouped_tasks: 학생 유형별 후보 작업</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>draft_guide: 안내 작성자가 만든 초안</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>review_notes: 검토자의 수정 요청</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>human_feedback: 사람이 승인하거나 고친 내용</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>final_answer: 최종 안내문</span></code></pre></div>
+<p>모든 항목을 다 쓸 필요는 없다. 자기 설계에 필요한 상태만 남긴다.</p>
+<h3 id="step-5.-사람-승인-지점-정하기">Step 5. 사람 승인 지점
+정하기</h3>
+<p>멀티에이전트 설계에는 사람이 확인해야 하는 지점이 있어야 한다. 모든
+단계를 자동으로 통과시키면 잘못된 안내가 그대로 나갈 수 있다.</p>
+<p>예시 답안:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>승인 지점: 검토자가 최종 안내문을 확인한 뒤</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>사람이 확인해야 하는 이유: 마감일, 신청 자격, 링크 오류는 학생에게 직접 피해를 줄 수 있다</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>승인 후 다음 단계: 최종 안내문을 학과 홈페이지나 공지 채널에 맞게 다듬는다</span></code></pre></div>
+<h3 id="step-6.-실패-조건-쓰기">Step 6. 실패 조건 쓰기</h3>
+<p>멀티에이전트 설계는 실패 조건까지 있어야 한다.</p>
+<p>예시 답안:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>공지가 1개뿐이고 단순 전달이면 단일 에이전트가 더 낫다.</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>공지 수집자가 마감일을 잘못 추출하면 이후 모든 역할의 결과가 틀어진다.</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>대상 분류자가 복수전공생과 전과생 조건을 혼동하면 잘못된 안내가 나간다.</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>검토 없이 자동 게시하면 원문에 없는 조건이 추가될 수 있다.</span></code></pre></div>
+<h3 id="step-7.-멀티에이전트를-쓰는-근거-정리하기">Step 7.
+멀티에이전트를 쓰는 근거 정리하기</h3>
+<p>마지막으로 “왜 이 작업을 멀티에이전트로 나누는가”를 짧게
+정리한다.</p>
+<p>예시 답안:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>사실 추출, 대상 분류, 안내문 작성, 검토의 책임이 서로 다르다.</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>각 단계의 입력과 출력이 표로 분리된다.</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>사람이 승인해야 하는 지점이 분명하다.</span></code></pre></div>
+<h3 id="step-8.-5문장-회고-쓰기">Step 8. 5문장 회고 쓰기</h3>
+<p>예시 답안:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="ss">1. </span>이 작업은 단순 요약보다 대상 분류와 검증이 중요하다.</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ss">2. </span>역할을 나누면 공지 원문에서 뽑은 사실과 최종 안내문을 분리할 수 있다.</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="ss">3. </span>가장 중요한 공유 상태는 마감일과 신청 대상이다.</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="ss">4. </span>공지가 적거나 조건이 단순하면 멀티에이전트가 오히려 느리다.</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="ss">5. </span>10주차 Supervisor 패턴에서는 검토자가 수정 요청을 보낼 때 어느 역할로 되돌릴지 결정할 수 있다.</span></code></pre></div>
+<hr />
+<h2 id="homework-자기-주제로-설계-과제-만들기">9.9 Homework: 자기 주제로
+설계 과제 만들기</h2>
+<h3 id="목표">목표</h3>
+<p>수업시간에 함께 만든 예시를 바탕으로, 각자 별도 주제 하나를 골라
+멀티에이전트 설계안을 작성한다.</p>
+<p>작성 파일:</p>
+<pre class="text"><code>multi-agent/docs/week09_homework_design.md</code></pre>
+<h3 id="활동-방법">활동 방법</h3>
+<ol type="1">
+<li>자기 도메인을 한 줄로 정한다 (예: 학과 공지 요약, 논문 검색, 게임
+가이드 작성).</li>
+<li>그 도메인에서 자주 하는 작업을 1개 고른다.</li>
+<li>그 작업을 단일 에이전트로 만들었을 때의 한계를 3줄 적는다.</li>
+<li>멀티에이전트로 만든다면 어떤 역할로 나눌지 적는다 (최소 2명).</li>
+<li>각 역할의 입력·출력·검증 기준을 적는다.</li>
+<li>멀티에이전트를 쓰면 안 되는 조건을 최소 3개 적는다.</li>
+</ol>
+<p>좋은 주제 예: - 논문 3편을 비교해 공통 주장과 차이점 정리하기 - 여행
+조건을 받아 일정·예산·주의사항 설계하기 - 코드 변경 요청을 읽고 구현
+계획·위험·테스트 항목 나누기 - 고객 문의를 분류하고 답변 초안을
+작성하기</p>
+<p>피해야 할 주제: - 문장 하나 번역하기 - <code>1 + 1</code> 계산하기 -
+파일 이름 하나 바꾸기 - 단순 요약 한 번 만들기</p>
+<h3 id="자기-점검-기준">자기 점검 기준</h3>
+<ul>
+<li>역할이 책임 단위로 나뉘었는가</li>
+<li>각 역할의 입력과 출력이 분명한가</li>
+<li>사람 승인 지점이 필요한 곳에 있는가</li>
+<li>멀티에이전트를 쓰지 않아도 되는 작업은 아닌가</li>
+<li>다음 주 Supervisor 패턴으로 옮길 수 있는 흐름인가</li>
+</ul>
+<h3 id="설계표">설계표</h3>
+<div class="sourceCode" id="cb21"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">## 멀티에이전트 설계표</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>도메인:</span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>작업:</span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>단일 에이전트로 부족한 이유 (3줄):</span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>역할 1: 입력 / 작업 / 출력 / 검증 기준</span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>역할 2: 입력 / 작업 / 출력 / 검증 기준</span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>역할 3 (선택): 입력 / 작업 / 출력 / 검증 기준</span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>처리 흐름:</span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>공유 상태:</span>
+<span id="cb21-11"><a href="#cb21-11" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>사람 승인 지점:</span>
+<span id="cb21-12"><a href="#cb21-12" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>멀티에이전트가 더 나아질 것이라 보는 근거:</span>
+<span id="cb21-13"><a href="#cb21-13" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>멀티에이전트를 쓰면 안 되는 조건:</span></code></pre></div>
+<p>이 설계표는 14주차 최종 프로젝트 주제의 출발점이 될 수 있다.</p>
+<hr />
+<h2 id="제출물">9.10 제출물</h2>
+<h3 id="필수">필수</h3>
+<ul>
+<li>수업 실습 파일:
+<code>multi-agent/docs/week09_inclass_design.md</code></li>
+<li>Homework 파일:
+<code>multi-agent/docs/week09_homework_design.md</code></li>
+<li>Homework 멀티에이전트 설계표 1개</li>
+<li>역할별 입력·작업·출력·검증 기준</li>
+<li>처리 흐름 또는 간단한 다이어그램</li>
+<li>공유 상태 초안</li>
+<li>실패 조건 3개 이상</li>
+<li>5문장 회고</li>
+</ul>
+<h3 id="회고-질문">회고 질문</h3>
+<ol type="1">
+<li>이 작업은 왜 단일 에이전트로 부족한가</li>
+<li>역할을 나누었을 때 가장 분명해진 입력과 출력은 무엇인가</li>
+<li>사람 승인이 필요한 지점은 어디인가</li>
+<li>멀티에이전트를 쓰면 오히려 나빠지는 조건은 무엇인가</li>
+<li>다음 주(10주차)의 Supervisor 패턴을 적용한다면 무엇이 달라질
+것인가</li>
+</ol>
+<hr />
+<h2 id="체크리스트">체크리스트</h2>
+<ul>
+<li>단일 에이전트의 한계를 작업 구조 위에서 설명할 수 있다</li>
+<li>4대 패턴(순차·계층·협력·시장)을 한 줄씩 설명할 수 있다</li>
+<li>핸드오프와 공유 메모리의 차이를 설명할 수 있다</li>
+<li>자기 도메인의 작업을 역할·입력·출력·검증 기준으로 나눴다</li>
+<li>멀티에이전트가 <em>불리한</em> 조건을 설계안에 포함했다</li>
+<li>자기 도메인의 작업으로 멀티에이전트 설계표를 만들었다</li>
+</ul>
+<hr />
+<h2 id="참고-자료">참고 자료</h2>
+<ul>
+<li>Anthropic 「How we built our multi-agent research system」
+(2025)</li>
+<li>Cognition 「Don’t build multi-agents」 (2025)</li>
+<li>LangGraph 1.0 GA 발표:
+https://changelog.langchain.com/announcements/langgraph-1-0-is-now-generally-available</li>
+<li>LangGraph Multi-Agent 가이드:
+https://langchain-ai.github.io/langgraph/concepts/multi_agent/</li>
+<li>GAIA 벤치마크: https://huggingface.co/gaia-benchmark</li>
+<li>Notion ch6 「멀티 에이전트 시스템」</li>
+</ul>
+<hr />
+<h2 id="다음-주-예고">다음 주 예고</h2>
+<p>10주차에는 LangGraph의 <strong>Supervisor 패턴</strong>으로
+3-에이전트 시스템을 구현한다. Supervisor가 동적으로 어떤 에이전트에게
+일을 줄지 결정하는 흐름과, 체크포인터로 대화를 이어 가는 방법을
+다룬다.</p>
+</body>
+</html>

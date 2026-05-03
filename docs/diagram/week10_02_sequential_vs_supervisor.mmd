@@ -1,0 +1,29 @@
+flowchart TB
+    subgraph SEQ["순차형 (Week 9) — 흐름이 미리 정해짐"]
+        direction LR
+        S0([START]) --> S1[collector]
+        S1 --> S2[classifier]
+        S2 --> S3[writer]
+        S3 --> S4([END])
+    end
+
+    subgraph SUP["Supervisor 패턴 (Week 10) — 매 턴 동적 결정"]
+        direction TB
+        P0([START]) --> PSV[supervisor<br/>LLM 결정]
+        PSV -->|goto| PR[collector]
+        PSV -->|goto| PA[classifier]
+        PSV -->|goto| PW[writer]
+        PSV -->|goto END| P9([END])
+        PR -->|복귀| PSV
+        PA -->|복귀| PSV
+        PW -->|복귀| PSV
+    end
+
+    SEQ -. "9주차 → 10주차" .-> SUP
+
+    classDef step fill:#bfdbfe,stroke:#1d4ed8,color:#111
+    classDef sup fill:#fde68a,stroke:#b45309,stroke-width:2px,color:#111
+    classDef terminal fill:#e5e7eb,stroke:#374151,color:#111
+    class S1,S2,S3,PR,PA,PW step
+    class PSV sup
+    class S0,S4,P0,P9 terminal
