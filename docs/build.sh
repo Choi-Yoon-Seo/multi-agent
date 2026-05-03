@@ -13,9 +13,9 @@
 #   ./build.sh week-10         # 특정 주차만
 #   ./build.sh week-10 --html  # HTML만 (PDF 생략)
 #
-# 출력 위치: class/ 바로 아래 (week-XX.md와 같은 폴더)
-#  - class/week-10.html  (단일 파일, 다이어그램 base64 임베드)
-#  - class/week-10.pdf   (Chrome headless 렌더)
+# 출력 위치: docs/ 바로 아래 (week-XX.md와 같은 폴더)
+#  - docs/week-10.html  (단일 파일, 다이어그램 base64 임베드)
+#  - docs/week-10.pdf   (Chrome headless 렌더)
 #  더블클릭으로 바로 열린다.
 #
 # 의존성: pandoc, /Applications/Google Chrome.app (macOS)

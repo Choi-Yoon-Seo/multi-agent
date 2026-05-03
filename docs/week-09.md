@@ -330,45 +330,42 @@ class TeamState(TypedDict):
 
 ### 작업 위치
 
-9~13주차 실습과 과제는 주차별 `practice/chapter*/code` 폴더를 따로 만들지 않고, 저장소 루트의 `multi-agent/` 하나에서 이어서 진행한다. Python 가상환경도 저장소 루트에 한 번만 만든다.
+9~13주차 실습과 과제는 주차별 서브폴더를 따로 만들지 않고, **프로젝트 루트(`agenticai/`)에서 바로 이어서 진행**한다. 코드 파일과 답안 `.md`는 루트에 평탄하게 둔다. 강의자료(`docs/`)는 읽기 전용이며, 학생이 작성하는 파일은 모두 루트에 만든다.
 
 **macOS / Linux**
 
 ```bash
-# 프로젝트 루트에서
+# 프로젝트 루트(agenticai/)에서
 python3 -m venv .venv
 source .venv/bin/activate
 
-mkdir -p multi-agent/code multi-agent/docs multi-agent/data/input multi-agent/data/output
-cd multi-agent
+mkdir -p data/input data/output
 ```
 
 **Windows (PowerShell)**
 
 ```powershell
-# 프로젝트 루트에서
+# 프로젝트 루트(agenticai/)에서
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 
-New-Item -ItemType Directory -Force -Path multi-agent\code, multi-agent\docs, multi-agent\data\input, multi-agent\data\output | Out-Null
-cd multi-agent
+New-Item -ItemType Directory -Force -Path data\input, data\output | Out-Null
 ```
 
 **Windows (cmd)**
 
 ```bat
-REM 프로젝트 루트에서
+REM 프로젝트 루트(agenticai/)에서
 python -m venv .venv
 .venv\Scripts\activate.bat
 
-mkdir multi-agent\code multi-agent\docs multi-agent\data\input multi-agent\data\output
-cd multi-agent
+mkdir data\input data\output
 ```
 
-작성 파일:
+작성 파일 (프로젝트 루트에):
 
 ```text
-multi-agent/docs/week09_inclass_design.md
+week09_inclass.md
 ```
 
 ### Step 1. 예시 과제 이해하기
@@ -510,10 +507,10 @@ multi-agent/docs/week09_inclass_design.md
 
 수업시간에 함께 만든 예시를 바탕으로, 각자 별도 주제 하나를 골라 멀티에이전트 설계안을 작성한다.
 
-작성 파일:
+작성 파일 (프로젝트 루트에):
 
 ```text
-multi-agent/docs/week09_homework_design.md
+week09_homework.md
 ```
 
 ### 활동 방법
@@ -565,14 +562,16 @@ multi-agent/docs/week09_homework_design.md
 
 이 설계표는 14주차 최종 프로젝트 주제의 출발점이 될 수 있다.
 
+> 위 설계표를 프로젝트 루트의 `week09_homework.md`에 그대로 복사한 뒤 빈 항목을 채운다. 수업 실습 답안은 `week09_inclass.md`에 작성한다(같은 양식, 학과 공지 예시).
+
 ---
 
 ## 9.10 제출물
 
 ### 필수
 
-- 수업 실습 파일: `multi-agent/docs/week09_inclass_design.md`
-- Homework 파일: `multi-agent/docs/week09_homework_design.md`
+- 수업 실습 파일: `week09_inclass.md` (프로젝트 루트)
+- Homework 파일: `week09_homework.md` (프로젝트 루트)
 - Homework 멀티에이전트 설계표 1개
 - 역할별 입력·작업·출력·검증 기준
 - 처리 흐름 또는 간단한 다이어그램

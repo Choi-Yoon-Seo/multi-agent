@@ -138,7 +138,7 @@ flowchart LR
 소스를 수정한 뒤 PNG를 재생성하려면:
 
 ```bash
-cd class/diagram
+cd docs/diagram
 ./render.sh                  # 모든 .mmd → .png 일괄 렌더
 # 또는 개별:
 ./render.sh week10_assembly_full.mmd

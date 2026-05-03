@@ -13,10 +13,10 @@ __pycache__/
 .vscode/
 
 # Build artifacts (md → html/pdf 변환 결과)
-class/build/
-class/diagram/.node/
-class/week-*.html
-class/week-*.pdf
+docs/build/
+docs/diagram/.node/
+docs/week-*.html
+docs/week-*.pdf
 
 # Project specific
 _archive/
