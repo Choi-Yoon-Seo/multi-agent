@@ -1,4 +1,4 @@
-# Week 10. 코딩에이전트 도구 사용법 집중 실습
+# Week 10. 코딩에이전트 도구 사용법
 
 > 9주차 멀티에이전트 설계 과제를 이어 받아, 11~14주차 일정공지 에이전트 프로젝트를 만들 준비를 한다.  
 > 이번 주의 목표는 코드를 많이 짜는 것이 아니라, 코딩에이전트에게 일을 맡기고 결과를 검토하는 기본 절차를 익히는 것이다.
@@ -269,6 +269,42 @@ playwright-cli open docs/week-10.html
 - 브라우저 확인이 필요한 경우에만 사용한다.
 - 화면 확인 결과를 한두 문장으로 보고한다.
 ~~~
+
+### Skills 사용 방법
+
+skill 파일을 만들었다고 해서 모든 도구가 항상 자동으로 정확히 적용하는 것은 아니다. 처음에는 요청문에서 어떤 skill을 사용할지 직접 말해 주는 방식이 가장 안전하다.
+
+일정공지 에이전트 기능을 만들거나 고칠 때는 다음처럼 요청한다.
+
+```text
+schedule-agent skill을 사용해서 작업해줘.
+먼저 AGENTS.md, context.md, todo.md를 읽고, 아직 파일을 수정하지 말고 계획만 말해줘.
+이번 작업은 sample_notices.txt를 읽어 사용자별 안내문을 만드는 기본 흐름을 설계하는 것이다.
+```
+
+계획을 확인한 뒤 실제 수정을 요청할 때는 다음처럼 이어서 말한다.
+
+```text
+좋아. 계획대로 진행해줘.
+수정은 schedule_agent.py 중심으로 하고, 끝나면 python schedule_agent.py 실행 결과를 보고해줘.
+```
+
+HTML 자료나 출력 화면을 브라우저에서 확인할 때는 `playwright-check` skill을 사용한다.
+
+```text
+playwright-check skill을 사용해서 docs/week-10.html이 브라우저에서 열리는지 확인해줘.
+Playwright MCP는 쓰지 말고 playwright-cli 명령만 사용해줘.
+```
+
+도구별로는 다음처럼 말하면 된다.
+
+| 도구 | 요청 예시 |
+|---|---|
+| GitHub Copilot | `schedule-agent skill 기준으로 context.md와 todo.md를 읽고 작업 계획을 세워줘.` |
+| Gemini CLI | `먼저 AGENTS.md와 .agents/skills/schedule-agent/SKILL.md를 읽고, 파일 수정 전 계획만 말해줘.` |
+| Antigravity | `schedule-agent skill을 사용한다는 전제로 Agent Manager에 작업 계획을 나눠줘.` |
+
+핵심은 skill 이름만 부르는 것이 아니라, 관련 파일을 읽고 어떤 작업에 적용할지 함께 말하는 것이다.
 
 ---
 
