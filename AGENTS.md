@@ -4,8 +4,8 @@
 
 ## 프로젝트
 - 이름: 취향 기반 플레이리스트 에이전트
-- 기본 실행: `python playlist_agent.py`
-- 기본 작업 파일: `playlist_agent.py`
+- 기본 실행: `python3 my_agent.py`
+- 기본 작업 파일: `my_agent.py`
 
 ## 작업 방식
 1. 파일을 수정하기 전에 먼저 계획을 제시한다.
