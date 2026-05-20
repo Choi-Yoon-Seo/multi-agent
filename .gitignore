@@ -8,6 +8,7 @@ __pycache__/
 # Environment
 .env
 .venv/
+.cache
 
 # IDE
 .vscode/
@@ -33,3 +34,4 @@ checklists/
 schema/
 CLAUDE.md
 README.md
+draft.md
