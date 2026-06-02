@@ -1,65 +1,62 @@
 
 ===============================
-[입력 1] 플레이리스트
+입력 플레이리스트
 상황: 운동
 ===============================
 
-1. TAEYEON - Playlist
-   이유:  팬들이 자주 듣는 곡 / 대중적으로 자주 추천되는 곡
+1. ARASHI - Power of the Paradise
+   이유: 안정적으로 분위기를 이어주는 곡 / 강한 에너지가 느껴지는 곡
 
-2. DPR LIVE - Playlist
-   이유:  팬들이 자주 듣는 곡 / 안정적으로 분위기를 이어주는 곡
+2. Choi Yu Ree - Night Sea
+   이유: 대중적으로 자주 추천되는 곡 / 운동 분위기와 잘 어울리는 곡
 
-3. scene - planet girl
-   이유:  기반 추천 / 안정적으로 분위기를 이어주는 곡
+3. ONE OR EIGHT - POWER
+   이유: 대중적으로 자주 추천되는 곡 / 강한 에너지가 느껴지는 곡
 
-4. ENHYPEN - Mixed Up
-   이유:  기반 추천 / 무난하게 듣기 좋은 곡
+4. Lee Mi Ja - Gomo Hill That It Rains
+   이유: 무난하게 듣기 좋은 곡 / 운동 분위기와 잘 어울리는 곡
 
-5. IRISÉ - LOVE GAME
-   이유:  기반 추천 / 무난하게 듣기 좋은 곡
+5. NCT WISH - Feel The Beat
+   이유: nct wish 기반 추천 / 무난하게 듣기 좋은 곡
 
-6. KiiiKiii - 404 (New Era)
-   이유:  스타일과 유사한 곡 / 대중적으로 자주 추천되는 곡
+6. NCT WISH - Don't Say You Love Me
+   이유: nct wish와 분위기가 잘 어울리는 곡 / 무난하게 듣기 좋은 곡
 
-7. Crush - Ego
-   이유:  스타일과 유사한 곡 / 무난하게 듣기 좋은 곡
+7. Snow Man - オドロウゼ！
+   이유: 안정적으로 분위기를 이어주는 곡 / 활동적인 분위기에 적합한 곡
 
-8. CORTIS - REDRED
-   이유:  스타일과 유사한 곡 / 대중적으로 자주 추천되는 곡
+8. MochiL - FLUFFY POWER MOCHIL
+   이유: 대중적으로 자주 추천되는 곡 / 강한 에너지가 느껴지는 곡
 
-9. ILLIT - It's Me
-   이유:  기반 추천 / 대중적으로 자주 추천되는 곡
+9. NCT WISH - WISH - Japanese Version
+   이유: nct wish 팬들이 자주 듣는 곡 / 무난하게 듣기 좋은 곡
 
-10. OFFICIAL HIGE DANDISM - MIXED NUTS
-   이유:  스타일과 유사한 곡 / 대중적으로 자주 추천되는 곡
+10. SEVENTEEN - A-TEEN
+   이유: 무난하게 듣기 좋은 곡 / 활동적인 분위기에 적합한 곡
 
-11. NAYEON - POP!
-   이유:  스타일과 유사한 곡 / 대중적으로 자주 추천되는 곡
+11. NCT WISH - 2.0 (TWO POINT O)
+   이유: nct wish 팬들이 자주 듣는 곡 / 대중적으로 자주 추천되는 곡
 
-12. Polodared - Mona Lisa
-   이유:  기반 추천 / 대중적으로 자주 추천되는 곡
+12. Jay Park - RUN IT UP
+   이유: 안정적으로 분위기를 이어주는 곡 / 박자감이 살아있는 곡
 
-13. LUCY - PLAY
-   이유:  팬들이 자주 듣는 곡 / 안정적으로 분위기를 이어주는 곡
+13. ARASHI - Power of the Paradise
+   이유: 안정적으로 분위기를 이어주는 곡 / 운동 텐션을 높여주는 곡
 
-14. OFFICIAL HIGE DANDISM - Mixed Nuts
-   이유:  기반 추천 / 무난하게 듣기 좋은 곡
+14. aiko - Power of Love
+   이유: 무난하게 듣기 좋은 곡 / 강한 에너지가 느껴지는 곡
 
-15. PSY - What Would Have Been? (Feat. Lena Park)
-   이유:  팬들이 자주 듣는 곡 / 대중적으로 자주 추천되는 곡
+15. NCT WISH - 1000
+   이유: nct wish 팬들이 자주 듣는 곡 / 안정적으로 분위기를 이어주는 곡
 
-16. prettifun - Workout
-   이유:  기반 추천 / 안정적으로 분위기를 이어주는 곡
+16. Bluejacket - ROACHES IN THE LAWN
+   이유: 안정적으로 분위기를 이어주는 곡 / 활동적인 분위기에 적합한 곡
 
-17. RYUL of LNGSHOT - Thinking
-   이유:  팬들이 자주 듣는 곡 / 대중적으로 자주 추천되는 곡
+17. NCT WISH - Ode to Love
+   이유: nct wish 기반 추천 / 안정적으로 분위기를 이어주는 곡
 
-18. Hearts2Hearts - RUDE!
-   이유:  기반 추천 / 안정적으로 분위기를 이어주는 곡
+18. 楽音 - mosi mosi?
+   이유: 안정적으로 분위기를 이어주는 곡 / 활동적인 분위기에 적합한 곡
 
-19. D.O. - Popcorn
-   이유:  스타일과 유사한 곡 / 무난하게 듣기 좋은 곡
-
-20. J. Cole - Work Out
-   이유:  팬들이 자주 듣는 곡 / 대중적으로 자주 추천되는 곡
+19. AKRIILA - POPPER!
+   이유: 무난하게 듣기 좋은 곡 / 활동적인 분위기에 적합한 곡
