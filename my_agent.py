@@ -415,24 +415,26 @@ YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
 YOUTUBE_TOKEN_PATH = "youtube_token.pickle"
 
 def get_youtube_client():
-    """YouTube OAuth 클라이언트를 반환합니다. 토큰 캐싱 지원."""
-    creds = None
-    # 기존 토큰 로드
-    if os.path.exists(YOUTUBE_TOKEN_PATH):
-        with open(YOUTUBE_TOKEN_PATH, "rb") as f:
-            creds = pickle.load(f)
-    # 토큰 만료 시 갱신
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    elif not creds or not creds.valid:
-        secret_path = os.getenv("YOUTUBE_CLIENT_SECRET_PATH", "client_secret.json")
-        if not os.path.exists(secret_path):
-            print("[YouTube] client_secret.json 파일이 없습니다.")
-            return None
-        flow = InstalledAppFlow.from_client_secrets_file(secret_path, YOUTUBE_SCOPES)
-        creds = flow.run_local_server(port=0)
-        with open(YOUTUBE_TOKEN_PATH, "wb") as f:
-            pickle.dump(creds, f)
+    """YouTube OAuth 클라이언트를 반환합니다. Streamlit Secrets 기반."""
+    from google.oauth2.credentials import Credentials
+
+    client_id = os.getenv("YOUTUBE_CLIENT_ID")
+    client_secret = os.getenv("YOUTUBE_CLIENT_SECRET")
+    refresh_token = os.getenv("YOUTUBE_REFRESH_TOKEN")
+
+    if not all([client_id, client_secret, refresh_token]):
+        print("[YouTube] Secrets에 YOUTUBE_CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN 필요")
+        return None
+
+    creds = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=YOUTUBE_SCOPES
+    )
+    creds.refresh(Request())
     return build("youtube", "v3", credentials=creds)
 
 
