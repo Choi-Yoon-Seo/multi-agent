@@ -145,20 +145,17 @@ def classify_items(facts):
 # Spotify OAuth
 def get_spotify_client():
     try:
+        from spotipy.oauth2 import SpotifyClientCredentials
         sp = spotipy.Spotify(
-            auth_manager=SpotifyOAuth(
+            auth_manager=SpotifyClientCredentials(
                 client_id=os.getenv("SPOTIFY_CLIENT_ID"),
-                client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
-                redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
-                scope="playlist-modify-public",
-                open_browser=False,
-                cache_path=None
+                client_secret=os.getenv("SPOTIFY_CLIENT_SECRET")
             )
         )
-        print("[Spotify OAuth] 로그인 성공")
+        print("[Spotify] Client Credentials 로그인 성공")
         return sp
     except Exception as e:
-        print(f"[Spotify OAuth] 실패: {e}")
+        print(f"[Spotify] 실패: {e}")
         return None
 
 # Spotify 후보곡 수집
