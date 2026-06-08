@@ -150,7 +150,9 @@ def get_spotify_client():
                 client_id=os.getenv("SPOTIFY_CLIENT_ID"),
                 client_secret=os.getenv("SPOTIFY_CLIENT_SECRET"),
                 redirect_uri=os.getenv("SPOTIFY_REDIRECT_URI"),
-                scope="playlist-modify-public"
+                scope="playlist-modify-public",
+                open_browser=False,
+                cache_path=None
             )
         )
         print("[Spotify OAuth] 로그인 성공")
