@@ -3,10 +3,14 @@ import os
 import json
 import random
 import spotipy
+import pickle
 
 from groq import Groq
 from dotenv import load_dotenv
 from spotipy.oauth2 import SpotifyOAuth
+from googleapiclient.discovery import build
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
 
 load_dotenv()
 
@@ -408,6 +412,150 @@ def save_draft(text):
     file_path.write_text(text, encoding="utf-8")
     print(f"[Save] 저장 완료: {file_path}")
 
+YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.force-ssl"]
+YOUTUBE_TOKEN_PATH = "youtube_token.pickle"
+
+def get_youtube_client():
+    """YouTube OAuth 클라이언트를 반환합니다. 토큰 캐싱 지원."""
+    creds = None
+    # 기존 토큰 로드
+    if os.path.exists(YOUTUBE_TOKEN_PATH):
+        with open(YOUTUBE_TOKEN_PATH, "rb") as f:
+            creds = pickle.load(f)
+    # 토큰 만료 시 갱신
+    if creds and creds.expired and creds.refresh_token:
+        creds.refresh(Request())
+    elif not creds or not creds.valid:
+        secret_path = os.getenv("YOUTUBE_CLIENT_SECRET_PATH", "client_secret.json")
+        if not os.path.exists(secret_path):
+            print("[YouTube] client_secret.json 파일이 없습니다.")
+            return None
+        flow = InstalledAppFlow.from_client_secrets_file(secret_path, YOUTUBE_SCOPES)
+        creds = flow.run_local_server(port=0)
+        with open(YOUTUBE_TOKEN_PATH, "wb") as f:
+            pickle.dump(creds, f)
+    return build("youtube", "v3", credentials=creds)
+
+
+def search_youtube_video(youtube, query):
+    """곡명+아티스트로 YouTube 검색 후 첫 번째 video ID 반환. 없으면 None."""
+    try:
+        response = youtube.search().list(
+            q=query,
+            part="id",
+            type="video",
+            maxResults=1,
+            videoCategoryId="10"  # Music 카테고리
+        ).execute()
+        items = response.get("items", [])
+        if items:
+            return items[0]["id"]["videoId"]
+    except Exception as e:
+        print(f"[YouTube] 검색 실패 ({query}): {e}")
+    return None
+
+
+def create_youtube_playlist(youtube, title, description=""):
+    """YouTube 재생목록 생성 후 playlist ID 반환."""
+    try:
+        response = youtube.playlists().insert(
+            part="snippet,status",
+            body={
+                "snippet": {
+                    "title": title,
+                    "description": description
+                },
+                "status": {"privacyStatus": "public"}  # "private"으로 바꿀 수도 있음
+            }
+        ).execute()
+        playlist_id = response["id"]
+        print(f"[YouTube] 재생목록 생성 완료: {title} (ID: {playlist_id})")
+        return playlist_id
+    except Exception as e:
+        print(f"[YouTube] 재생목록 생성 실패: {e}")
+        return None
+
+
+def add_video_to_playlist(youtube, playlist_id, video_id):
+    """video_id를 재생목록에 추가합니다."""
+    try:
+        youtube.playlistItems().insert(
+            part="snippet",
+            body={
+                "snippet": {
+                    "playlistId": playlist_id,
+                    "resourceId": {
+                        "kind": "youtube#video",
+                        "videoId": video_id
+                    }
+                }
+            }
+        ).execute()
+    except Exception as e:
+        print(f"[YouTube] 영상 추가 실패 (video_id={video_id}): {e}")
+
+
+def export_playlist_to_youtube(classified_items, playlist_title=None):
+    """
+    classified_items의 최종 추천곡들을 YouTube 재생목록으로 내보냅니다.
+    재생목록 URL을 반환합니다.
+    """
+    youtube = get_youtube_client()
+    if not youtube:
+        print("[YouTube] 인증 실패로 내보내기를 건너뜁니다.")
+        return None
+
+    # 전체 곡 목록 수집
+    all_tracks = []
+    for item in classified_items:
+        situation = item.get("원래_입력", {}).get("situation", "")
+        tracks = item.get("tracks", [])
+        music_props = item.get("음악_속성", {})
+        params = item.get("검색_파라미터", {})
+        filtered = filter_tracks_by_situation(tracks, music_props, params)
+        playlist = build_playlist_flow(filtered)
+        for track in playlist:
+            all_tracks.append({
+                "name": track.get("name", ""),
+                "artist": track.get("artist", ""),
+                "situation": situation
+            })
+
+    if not all_tracks:
+        print("[YouTube] 내보낼 곡이 없습니다.")
+        return None
+
+    # 재생목록 생성
+    if not playlist_title:
+        situations = list({t["situation"] for t in all_tracks})
+        playlist_title = f"AI 추천 플레이리스트 - {', '.join(situations)}"
+
+    playlist_id = create_youtube_playlist(
+        youtube,
+        title=playlist_title,
+        description="my_agent.py가 생성한 AI 추천 플레이리스트입니다."
+    )
+    if not playlist_id:
+        return None
+
+    # 각 곡 검색 후 추가
+    added = 0
+    for track in all_tracks:
+        query = f"{track['artist']} {track['name']}"
+        print(f"[YouTube] 검색 중: {query}")
+        video_id = search_youtube_video(youtube, query)
+        if video_id:
+            add_video_to_playlist(youtube, playlist_id, video_id)
+            added += 1
+            print(f"[YouTube] 추가 완료: {track['artist']} - {track['name']}")
+        else:
+            print(f"[YouTube] 영상 없음 (건너뜀): {query}")
+
+    url = f"https://www.youtube.com/playlist?list={playlist_id}"
+    print(f"\n[YouTube] 총 {added}곡 추가 완료")
+    print(f"[YouTube] 재생목록 URL: {url}")
+    return url
+
 def write_playlist_guides(classified_items):
     """
     classified_items를 받아 상황별 Markdown 문자열을 생성하여 반환합니다.
@@ -794,6 +942,11 @@ def main():
         choice = input("선택 입력 (1/2/3): ").strip()
         if choice == "1":
             save_draft(output)
+            # ✅ YouTube 내보내기 추가
+            yt_choice = input("YouTube 재생목록으로 내보내시겠습니까? (y/n): ").strip().lower()
+            if yt_choice == "y":
+                yt_title = input("재생목록 이름 입력 (엔터 시 자동 생성): ").strip() or None
+                export_playlist_to_youtube(classified_items, playlist_title=yt_title)
             print("프로그램 종료")
             return
         elif choice == "2":
